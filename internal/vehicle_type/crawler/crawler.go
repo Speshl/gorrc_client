@@ -258,7 +258,7 @@ func (c *Crawler) SetCommand(state models.ControlState) {
 	c.LastCommandTime = time.Now()
 
 	c.sendCommand()
-	//c.updateHud()
+	c.updateHud()
 }
 
 func (c *Crawler) sendCommand() {
