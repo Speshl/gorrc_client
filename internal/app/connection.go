@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/Speshl/gorrc_client/internal/models"
 	socketio "github.com/googollee/go-socket.io"
@@ -80,6 +81,9 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
 	go func() {
+		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
+		sent := true
+		hudToSend := models.Hud{}
 		for {
 			select {
 			case <-c.Ctx.Done():
@@ -91,7 +95,13 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 					return
 				}
 				if c.HudOutput != nil {
-					encodedHud, err := encode(hud)
+					hudToSend = hud
+					sent = false
+				}
+			case <-hudTicker.C:
+				if !sent {
+					encodedHud, err := encode(hudToSend)
+					sent = true
 					err = c.HudOutput.SendText(encodedHud)
 					if err != nil {
 						log.Printf("failed sending hud: error - %s\n", err.Error())
@@ -99,6 +109,7 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 					}
 				}
 			}
+
 		}
 	}()
 	return nil
