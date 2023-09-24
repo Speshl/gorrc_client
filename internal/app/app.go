@@ -45,8 +45,8 @@ type App struct {
 func NewApp(cfg config.Config, client *socketio.Client) *App {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	commandChannel := make(chan models.ControlState, 2)
-	hudChannel := make(chan models.Hud, 2)
+	commandChannel := make(chan models.ControlState, 100)
+	hudChannel := make(chan models.Hud, 100)
 
 	command := pca9685.NewCommand(cfg.CommandCfg)
 

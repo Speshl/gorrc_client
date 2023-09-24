@@ -171,7 +171,10 @@ func (c *Crawler) Start(ctx context.Context) error {
 	}
 
 	safetyTicker := time.NewTicker(MaxTimeSinceLastCommand)
+	commandTicker := time.NewTicker(17 * time.Millisecond) //60hz
 	ctx, cancel := context.WithCancel(ctx)
+	latestCommand := models.ControlState{}
+	used := true
 	for {
 		select {
 		case <-ctx.Done():
@@ -185,13 +188,20 @@ func (c *Crawler) Start(ctx context.Context) error {
 					c.resetCar()
 				}
 			}
+		case <-commandTicker.C:
+			if !used {
+				c.SetCommand(latestCommand)
+				used = true
+			}
+
 		case command, ok := <-c.CommandChannel:
 			if !ok {
 				log.Println("control state channel closed")
 				cancel()
 				return ctx.Err()
 			}
-			c.SetCommand(command)
+			latestCommand = command
+			used = false
 		}
 	}
 }
