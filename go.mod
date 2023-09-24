@@ -3,6 +3,9 @@ module github.com/Speshl/gorrc_client
 go 1.20
 
 require (
+	github.com/google/uuid v1.3.1
+	github.com/googolgl/go-i2c v0.1.1
+	github.com/googolgl/go-pca9685 v0.1.6
 	github.com/googollee/go-socket.io v1.8.0-rc.1
 	github.com/pion/webrtc/v3 v3.2.19
 	golang.org/x/sync v0.1.0
@@ -12,7 +15,6 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gomodule/redigo v1.8.9 // indirect
-	github.com/google/uuid v1.3.1 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/pion/datachannel v1.5.5 // indirect
 	github.com/pion/dtls/v2 v2.2.7 // indirect
@@ -30,6 +32,7 @@ require (
 	github.com/pion/transport/v2 v2.2.3 // indirect
 	github.com/pion/turn/v2 v2.1.3 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sirupsen/logrus v1.8.1 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
 	golang.org/x/exp v0.0.0-20230713183714-613f0c0eb8a1 // indirect

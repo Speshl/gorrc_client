@@ -10,6 +10,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Speshl/gorrc_client/internal/command"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/models"
 	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
@@ -46,6 +47,8 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 	commandChannel := make(chan models.ControlState, 2)
 	hudChannel := make(chan models.Hud, 2)
 
+	command := command.NewTestCommand(cfg.CommandCfg)
+
 	//TODO Support multiple car types
 	return &App{
 		Cfg:            cfg,
@@ -54,7 +57,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		ctxCancel:      cancel,
 		commandChannel: commandChannel,
 		hudChannel:     hudChannel,
-		car:            crawler.NewCrawler(commandChannel, hudChannel),
+		car:            crawler.NewCrawler(commandChannel, hudChannel, command),
 	}
 }
 

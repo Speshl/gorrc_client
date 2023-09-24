@@ -7,7 +7,7 @@
 *.dll
 *.so
 *.dylib
-*.env
+#*.env
 vendor/
 
 # Test binary, built with `go test -c`

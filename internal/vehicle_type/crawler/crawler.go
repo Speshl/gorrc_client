@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Speshl/gorrc_client/internal/command"
 	"github.com/Speshl/gorrc_client/internal/models"
 	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
 )
@@ -103,6 +104,8 @@ type Ratio struct {
 }
 
 type Crawler struct {
+	command command.CommandIFace
+
 	lock      sync.RWMutex
 	Stopped   bool
 	Esc       float64
@@ -129,7 +132,7 @@ type Crawler struct {
 	LastCommandTime time.Time
 }
 
-func NewCrawler(commandChan chan models.ControlState, hudChan chan models.Hud) *Crawler {
+func NewCrawler(commandChan chan models.ControlState, hudChan chan models.Hud, command command.CommandIFace) *Crawler {
 	return &Crawler{
 		Stopped:        true,
 		Gear:           0,
@@ -143,6 +146,8 @@ func NewCrawler(commandChan chan models.ControlState, hudChan chan models.Hud) *
 		Ratios:         GearRatios,
 		HudChannel:     hudChan,
 		CommandChannel: commandChan,
+
+		command: command,
 	}
 }
 
@@ -160,6 +165,11 @@ func (c *Crawler) String() string {
 }
 
 func (c *Crawler) Start(ctx context.Context) error {
+	err := c.command.Init()
+	if err != nil {
+		return fmt.Errorf("failed initializing command interface: %w", err)
+	}
+
 	safetyTicker := time.NewTicker(MaxTimeSinceLastCommand)
 	ctx, cancel := context.WithCancel(ctx)
 	for {
@@ -236,5 +246,29 @@ func (c *Crawler) SetCommand(state models.ControlState) {
 	//Save the state to compare new state against next time
 	c.LastCommand = &state
 	c.LastCommandTime = time.Now()
+
+	c.sendCommand()
 	c.updateHud()
+}
+
+func (c *Crawler) sendCommand() {
+	err := c.command.Set("steer", c.Steer, MinOutput, MaxOutput)
+	if err != nil {
+		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
+	}
+
+	err = c.command.Set("esc", c.Esc, MinOutput, MaxOutput)
+	if err != nil {
+		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
+	}
+
+	err = c.command.Set("pan", c.Pan, MinOutput, MaxOutput)
+	if err != nil {
+		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
+	}
+
+	err = c.command.Set("tilt", c.Tilt, MinOutput, MaxOutput)
+	if err != nil {
+		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
+	}
 }

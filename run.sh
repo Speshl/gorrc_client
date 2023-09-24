@@ -1,6 +1,6 @@
 #!/bin/sh
 
-file="./goremotecontrol_web"
+file="./gorrc_client"
 
 if [ -f "$file" ] ; then
     rm "$file"
@@ -12,4 +12,4 @@ go build .
 export $(grep -v '^#' car.env | xargs)
 export XDG_RUNTIME_DIR=""
 
-sudo -E ./goremotecontrol_web
+sudo -E ./gorrc_client
