@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/Speshl/gorrc_client/internal/app"
 	"github.com/Speshl/gorrc_client/internal/config"
@@ -22,5 +23,11 @@ func main() {
 
 	app.RegisterHandlers()
 
-	app.Start()
+	err = app.Start()
+	if err != nil {
+		log.Printf("client shutdown with error: %s", err.Error())
+	} else {
+		log.Println("client shutdown successfully")
+	}
+
 }

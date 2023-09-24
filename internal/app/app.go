@@ -121,6 +121,7 @@ func (a *App) Start() error {
 		for {
 			select {
 			case <-groupCtx.Done():
+				log.Println("health checker stopped")
 				return groupCtx.Err()
 			case <-healthTicker.C:
 				log.Println("healthcheck: healthy")
@@ -138,6 +139,6 @@ func (a *App) Start() error {
 			return fmt.Errorf("server stopping due to error - %w", err)
 		}
 	}
-	return nil
 
+	return a.client.Close()
 }
