@@ -65,7 +65,15 @@ func (c *Command) Init() error {
 		log.Printf("servo added: %s\n", name)
 	}
 	c.servos = servos
+	c.CenterAll()
 	return nil
+}
+
+func (c *Command) CenterAll() {
+	log.Println("recenting all servos")
+	for i := range c.servos {
+		c.servos[i].servo.Fraction(0.5)
+	}
 }
 
 func (c *Command) Set(name string, value, min, max float64) error {
