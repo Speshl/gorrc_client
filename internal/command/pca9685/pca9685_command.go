@@ -11,7 +11,7 @@ import (
 
 const (
 	MaxValue = 1.0
-	MinValue = -1.0
+	MinValue = 0.0
 	MaxPulse = pca9685.ServoMaxPulseDef
 	MinPulse = pca9685.ServoMinPulseDef
 	AcRange  = pca9685.ServoRangeDef
@@ -70,7 +70,7 @@ func (c *Command) Init() error {
 }
 
 func (c *Command) CenterAll() {
-	log.Println("recenting all servos")
+	log.Println("centering all servos")
 	for i := range c.servos {
 		c.servos[i].servo.Fraction(0.5)
 	}
@@ -86,7 +86,7 @@ func (c *Command) Set(name string, value, min, max float64) error {
 
 		err := c.servos[name].servo.Fraction(float32(mappedValue))
 		if err != nil {
-			return fmt.Errorf("failed setting servo value - name: %s value: %d - error: %w\n", mappedValue, err)
+			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", name, mappedValue, err)
 		}
 		log.Printf("Servo %s: value: %.2f offset: %.2f mapped: %.2f\n", name, value, val.offset, mappedValue)
 	}
