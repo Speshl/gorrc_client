@@ -32,7 +32,7 @@ type Servo struct {
 	servo    *pca9685.Servo
 }
 
-func NewTestCommand(cfg config.CommandConfig) *Command {
+func NewCommand(cfg config.CommandConfig) *Command {
 	return &Command{
 		cfg:    cfg,
 		servos: make(map[string]*Servo, MaxSupportedServos),

@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/command"
+	pca9685 "github.com/Speshl/gorrc_client/internal/command/pca9685"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/models"
 	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
@@ -38,7 +39,7 @@ type App struct {
 	// speaker *carspeaker.CarSpeaker
 	// mic     *carmic.CarMic
 	// cam     *carcam.CarCam
-	// command *carcommand.CarCommand
+	command command.CommandIFace
 }
 
 func NewApp(cfg config.Config, client *socketio.Client) *App {
@@ -47,7 +48,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 	commandChannel := make(chan models.ControlState, 2)
 	hudChannel := make(chan models.Hud, 2)
 
-	command := command.NewTestCommand(cfg.CommandCfg)
+	command := pca9685.NewCommand(cfg.CommandCfg)
 
 	//TODO Support multiple car types
 	return &App{
