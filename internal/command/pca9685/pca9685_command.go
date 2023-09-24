@@ -21,7 +21,7 @@ const (
 
 type Command struct {
 	cfg    config.CommandConfig
-	servos map[string]*Servo
+	servos map[string]Servo
 	driver *pca9685.PCA9685
 }
 
@@ -34,8 +34,7 @@ type Servo struct {
 
 func NewCommand(cfg config.CommandConfig) *Command {
 	return &Command{
-		cfg:    cfg,
-		servos: make(map[string]*Servo, MaxSupportedServos),
+		cfg: cfg,
 	}
 }
 
@@ -50,18 +49,22 @@ func (c *Command) Init() error {
 		return fmt.Errorf("error getting servo driver - %w", err)
 	}
 
+	servos := make(map[string]Servo, MaxSupportedServos)
 	for i := range c.cfg.ServoCfgs {
 		name := c.cfg.ServoCfgs[i].Name
-		c.servos[name].name = name
-		c.servos[name].inverted = c.cfg.ServoCfgs[i].Inverted
-		c.servos[name].offset = float64(c.cfg.ServoCfgs[i].Offset) / 100
-		c.servos[name].servo = c.driver.ServoNew(c.cfg.ServoCfgs[i].Channel, &pca9685.ServOptions{
-			AcRange:  AcRange,
-			MinPulse: float32(c.cfg.ServoCfgs[i].MinPulse),
-			MaxPulse: float32(c.cfg.ServoCfgs[i].MaxPulse),
-		})
-		log.Printf("%s servo added\n", name)
+		servos[name] = Servo{
+			name:     name,
+			inverted: c.cfg.ServoCfgs[i].Inverted,
+			offset:   float64(c.cfg.ServoCfgs[i].Offset) / 100,
+			servo: c.driver.ServoNew(c.cfg.ServoCfgs[i].Channel, &pca9685.ServOptions{
+				AcRange:  AcRange,
+				MinPulse: float32(c.cfg.ServoCfgs[i].MinPulse),
+				MaxPulse: float32(c.cfg.ServoCfgs[i].MaxPulse),
+			}),
+		}
+		log.Printf("servo added: %s\n", name)
 	}
+	c.servos = servos
 	return nil
 }
 

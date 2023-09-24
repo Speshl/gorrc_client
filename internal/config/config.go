@@ -80,6 +80,7 @@ func GetCommandConfig() CommandConfig {
 		}
 
 		if servoCfg.Name != "" {
+			log.Printf("found config for servo: %s\n", servoCfg.Name)
 			commandCfg.ServoCfgs = append(commandCfg.ServoCfgs, servoCfg)
 		}
 	}
