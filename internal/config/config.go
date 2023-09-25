@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"os"
@@ -80,6 +79,7 @@ func GetConfig() Config {
 		Key:        GetStringEnv("CARKEY", DefaultCarKey),
 		Password:   GetStringEnv("CARPASSWORD", DefaultPassword),
 		CommandCfg: GetCommandConfig(),
+		CamCfg:     GetCamConfig(),
 	}
 
 	log.Printf("app Config: \n%+v\n", cfg)
@@ -112,7 +112,7 @@ func GetCommandConfig() CommandConfig {
 	return commandCfg
 }
 
-func GetCamConfig(ctx context.Context) CamConfig {
+func GetCamConfig() CamConfig {
 	return CamConfig{
 		Width:          GetStringEnv("WIDTH", DefaultWidth),
 		Height:         GetStringEnv("HEIGHT", DefaultHeight),
