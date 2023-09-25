@@ -194,7 +194,10 @@ func (c *Crawler) Start(ctx context.Context) error {
 				if commandsSeen > 2 {
 					log.Printf("skipped some commands before send: %d\n", commandsSeen)
 				}
+				timeBeforeCommand := time.Now()
 				c.SetCommand(latestCommand)
+				setCommandDuration := time.Since(timeBeforeCommand)
+				log.Printf("command took: %s\n", setCommandDuration)
 				used = true
 				commandsSeen = 0
 			} else {
