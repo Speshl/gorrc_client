@@ -175,6 +175,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 	ctx, cancel := context.WithCancel(ctx)
 	latestCommand := models.ControlState{}
 	used := true
+	commandsSeen := 0
 	for {
 		select {
 		case <-ctx.Done():
@@ -190,8 +191,14 @@ func (c *Crawler) Start(ctx context.Context) error {
 			}
 		case <-commandTicker.C:
 			if !used {
+				if commandsSeen > 1 {
+					log.Printf("skipped some commands before send: %d\n", commandsSeen)
+				}
 				c.SetCommand(latestCommand)
 				used = true
+				commandsSeen = 0
+			} else {
+				log.Println("command tick, but no new command")
 			}
 
 		case command, ok := <-c.CommandChannel:
@@ -200,6 +207,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 				cancel()
 				return ctx.Err()
 			}
+			commandsSeen++
 			latestCommand = command
 			used = false
 		}
@@ -258,7 +266,7 @@ func (c *Crawler) SetCommand(state models.ControlState) {
 	c.LastCommandTime = time.Now()
 
 	c.sendCommand()
-	c.updateHud()
+	// c.updateHud()
 }
 
 func (c *Crawler) sendCommand() {
