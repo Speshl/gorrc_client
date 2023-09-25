@@ -171,7 +171,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 	}
 
 	safetyTicker := time.NewTicker(MaxTimeSinceLastCommand)
-	commandTicker := time.NewTicker(17 * time.Millisecond) //60hz
+	commandTicker := time.NewTicker(33 * time.Millisecond) //60hz
 	ctx, cancel := context.WithCancel(ctx)
 	latestCommand := models.ControlState{}
 	used := true
@@ -191,7 +191,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 			}
 		case <-commandTicker.C:
 			if !used {
-				if commandsSeen > 1 {
+				if commandsSeen > 2 {
 					log.Printf("skipped some commands before send: %d\n", commandsSeen)
 				}
 				c.SetCommand(latestCommand)
