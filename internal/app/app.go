@@ -102,11 +102,13 @@ func (a *App) Start() error {
 
 	//Start gstreamer loops
 	group.Go(func() error {
-		log.Println("starting gstreamer main send recieve loops")
-		gst.StartMainSendLoop() //Start gstreamer main send loop from main thread
-		log.Println("starting gstreamer main recieve loops")
-		gst.StartMainRecieveLoop() //Start gstreamer main recieve loop from main thread
-		return fmt.Errorf("gstreamer pipelines stopped")
+		go func() {
+			log.Println("starting gstreamer main send recieve loops")
+			gst.StartMainSendLoop() //Start gstreamer main send loop from main thread
+			log.Println("starting gstreamer main recieve loops")
+			gst.StartMainRecieveLoop() //Start gstreamer main recieve loop from main thread
+		}()
+		return nil
 	})
 
 	//kill listener
@@ -116,7 +118,7 @@ func (a *App) Start() error {
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		select {
 		case sig := <-signalChannel:
-			fmt.Printf("received signal: %s\n", sig)
+			log.Printf("received signal: %s\n", sig)
 			a.ctxCancel()
 			return fmt.Errorf("received signal: %s\n", sig)
 		case <-groupCtx.Done():
@@ -167,5 +169,6 @@ func (a *App) Start() error {
 		}
 	}
 
+	log.Println("shutting down")
 	return a.client.Close()
 }
