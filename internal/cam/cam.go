@@ -48,6 +48,7 @@ func (c *Cam) StartVideoDataListener(ctx context.Context) {
 		fps = DefaultFPS
 	}
 
+	log.Println("started video data listener")
 	duration := int(1000 / fps)
 	for {
 		select {

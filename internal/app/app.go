@@ -65,6 +65,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 }
 
 func (a *App) RegisterHandlers() error {
+	log.Println("registering handlers")
 	a.client.OnEvent("reply", func(s socketio.Conn, msg string) {
 		log.Println("Receive Message /reply: ", "reply", msg)
 	})
