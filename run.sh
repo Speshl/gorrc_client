@@ -9,7 +9,7 @@ fi
 echo Compiling...
 go build .
 
-export $(grep -v '^#' car.env | xargs)
+export $(grep -v '^#' bench.env | xargs)
 export XDG_RUNTIME_DIR=""
 
 sudo -E ./gorrc_client
