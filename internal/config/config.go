@@ -1,6 +1,7 @@
 package config
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
@@ -21,6 +22,15 @@ const (
 	DefaultInverted = false
 	DefaultOffset   = 0
 
+	// Default Camera Options
+	DefaultWidth          = "640"
+	DefaultHeight         = "480"
+	DefaultFPS            = "30"
+	DefaultVerticalFlip   = false
+	DefaultHorizontalFlip = false
+	DefaultProfile        = "high"
+	DefaultMode           = ""
+
 	DefaultAddress   = 0x40
 	DefaultI2CDevice = "/dev/i2c-1"
 )
@@ -30,6 +40,7 @@ type Config struct {
 	Key        string
 	Password   string
 	CommandCfg CommandConfig
+	CamCfg     CamConfig
 }
 
 type CommandConfig struct {
@@ -47,6 +58,20 @@ type ServoConfig struct {
 	MinPulse float64
 	DeadZone int
 	Offset   int
+}
+
+type CamConfig struct {
+	Width          string
+	Height         string
+	Fps            string
+	DisableVideo   bool
+	HorizontalFlip bool
+	VerticalFlip   bool
+	DeNoise        bool
+	Rotation       int
+	Level          string
+	Profile        string
+	Mode           string
 }
 
 func GetConfig() Config {
@@ -85,6 +110,18 @@ func GetCommandConfig() CommandConfig {
 		}
 	}
 	return commandCfg
+}
+
+func GetCamConfig(ctx context.Context) CamConfig {
+	return CamConfig{
+		Width:          GetStringEnv("WIDTH", DefaultWidth),
+		Height:         GetStringEnv("HEIGHT", DefaultHeight),
+		Fps:            GetStringEnv("FPS", DefaultFPS),
+		VerticalFlip:   GetBoolEnv("VFLIP", DefaultVerticalFlip),
+		HorizontalFlip: GetBoolEnv("HFLIP", DefaultHorizontalFlip),
+		Profile:        GetStringEnv("PROFILE", DefaultProfile),
+		Mode:           GetStringEnv("MODE", DefaultMode),
+	}
 }
 
 func GetIntEnv(env string, defaultValue int) int {

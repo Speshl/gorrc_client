@@ -64,10 +64,10 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 	// 	return fmt.Errorf("error adding audio track: %w", err)
 	// }
 
-	// _, err = c.PeerConnection.AddTrack(videoTrack)
-	// if err != nil {
-	// 	return fmt.Errorf("error adding video track: %w", err)
-	// }
+	_, err := c.PeerConnection.AddTrack(videoTrack)
+	if err != nil {
+		return fmt.Errorf("error adding video track: %w", err)
+	}
 
 	//c.PeerConnection.OnTrack(c.AudioPlayer) //TODO: Uncomment to play client audio
 

@@ -29,7 +29,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	}
 	a.connection = newConnection
 
-	err = a.connection.RegisterHandlers(nil, nil)
+	err = a.connection.RegisterHandlers(nil, a.cam.VideoTrack)
 	if err != nil {
 		log.Printf("failed registering handelers for connection")
 		return

@@ -10,9 +10,11 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Speshl/gorrc_client/internal/cam"
 	"github.com/Speshl/gorrc_client/internal/command"
 	pca9685 "github.com/Speshl/gorrc_client/internal/command/pca9685"
 	"github.com/Speshl/gorrc_client/internal/config"
+	"github.com/Speshl/gorrc_client/internal/gst"
 	"github.com/Speshl/gorrc_client/internal/models"
 	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
 	"github.com/Speshl/gorrc_client/internal/vehicle_type/crawler"
@@ -38,7 +40,7 @@ type App struct {
 
 	// speaker *carspeaker.CarSpeaker
 	// mic     *carmic.CarMic
-	// cam     *carcam.CarCam
+	cam     *cam.Cam
 	command command.CommandIFace
 }
 
@@ -84,11 +86,27 @@ func (a *App) Start() error {
 	group, groupCtx := errgroup.WithContext(a.ctx)
 	log.Println("starting...")
 
+	cam, err := cam.NewCam(a.Cfg.CamCfg)
+	if err != nil {
+		return fmt.Errorf("error creating carcam: %w\n", err)
+	}
+	a.cam = cam
+
 	defer func() {
 		log.Println("stopping...")
 		a.client.Close()
 	}()
 
+	//Start gstreamer loops
+	group.Go(func() error {
+		log.Println("starting gstreamer main send recieve loops")
+		gst.StartMainSendLoop() //Start gstreamer main send loop from main thread
+		log.Println("starting gstreamer main recieve loops")
+		gst.StartMainRecieveLoop() //Start gstreamer main recieve loop from main thread
+		return fmt.Errorf("gstreamer pipelines stopped")
+	})
+
+	//kill listener
 	group.Go(func() error {
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
@@ -105,10 +123,17 @@ func (a *App) Start() error {
 		return nil
 	})
 
+	//Start Camera
+	group.Go(func() error {
+		return a.cam.Start(a.ctx)
+	})
+
+	//Start car
 	group.Go(func() error {
 		return a.car.Start(groupCtx)
 	})
 
+	//Send connect and send healthchecks
 	group.Go(func() error {
 		encodedMsg, _ := encode(models.ConnectReq{
 			Key:      a.Cfg.Key,
@@ -130,7 +155,7 @@ func (a *App) Start() error {
 		}
 	})
 
-	err := group.Wait()
+	err = group.Wait()
 	if err != nil {
 		if errors.Is(err, context.Canceled) {
 			log.Println("context was cancelled")
