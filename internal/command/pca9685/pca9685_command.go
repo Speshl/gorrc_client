@@ -88,9 +88,6 @@ func (c *Command) Set(name string, value, min, max float64) error {
 		if err != nil {
 			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", name, mappedValue, err)
 		}
-		if name == "steer" {
-			log.Printf("Servo %s: value: %.2f offset: %.2f mapped: %.2f\n", name, value, val.offset, mappedValue)
-		}
 	}
 	return nil
 }

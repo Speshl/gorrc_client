@@ -22,8 +22,8 @@ const (
 	DefaultOffset   = 0
 
 	// Default Camera Options
-	DefaultWidth          = "640"
-	DefaultHeight         = "480"
+	DefaultWidth          = "320"
+	DefaultHeight         = "240"
 	DefaultFPS            = "30"
 	DefaultVerticalFlip   = false
 	DefaultHorizontalFlip = false

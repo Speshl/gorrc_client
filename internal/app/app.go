@@ -113,22 +113,21 @@ func (a *App) Start() error {
 	group.Go(func() error {
 		signalChannel := make(chan os.Signal, 1)
 		signal.Notify(signalChannel, os.Interrupt, syscall.SIGTERM)
-
+		signal.Notify(signalChannel, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 		select {
 		case sig := <-signalChannel:
 			fmt.Printf("received signal: %s\n", sig)
 			a.ctxCancel()
+			return fmt.Errorf("received signal: %s\n", sig)
 		case <-groupCtx.Done():
 			fmt.Printf("closing signal goroutine\n")
 			return groupCtx.Err()
 		}
-
-		return nil
 	})
 
 	//Start Camera
 	group.Go(func() error {
-		return a.cam.Start(a.ctx)
+		return a.cam.Start(groupCtx)
 	})
 
 	//Start car
