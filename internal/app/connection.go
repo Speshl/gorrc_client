@@ -103,7 +103,10 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 				}
 			case <-pingTicker.C:
 				if c.PingOutput != nil {
-					data, err := json.Marshal(models.Ping{TimeStamp: time.Now().UnixMilli()})
+					data, err := json.Marshal(models.Ping{
+						TimeStamp: time.Now().UnixMilli(),
+						Source:    PingSourceName,
+					})
 					sent = true
 					err = c.PingOutput.Send(data)
 					if err != nil {
