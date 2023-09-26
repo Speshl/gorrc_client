@@ -169,7 +169,7 @@ func (a *App) Start() error {
 		}
 	})
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(3 * time.Second)
 	a.speaker.Play(groupCtx, "startup")
 
 	err = group.Wait()
