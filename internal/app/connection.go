@@ -12,6 +12,8 @@ import (
 	"github.com/pion/webrtc/v3"
 )
 
+type AudioPlayer func(*webrtc.TrackRemote, *webrtc.RTPReceiver)
+
 type CommandHandler func(models.ControlState)
 
 type Connection struct {
@@ -23,11 +25,13 @@ type Connection struct {
 	CommandChannel chan models.ControlState
 	HudChannel     chan models.Hud
 
+	Speaker AudioPlayer
+
 	HudOutput  *webrtc.DataChannel
 	PingOutput *webrtc.DataChannel
 }
 
-func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud) (*Connection, error) {
+func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer) (*Connection, error) {
 	log.Printf("Creating User Connection %s\n", socketConn.ID())
 	webrtcCfg := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -71,7 +75,7 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 		return fmt.Errorf("error adding video track: %w", err)
 	}
 
-	//c.PeerConnection.OnTrack(c.AudioPlayer) //TODO: Uncomment to play client audio
+	c.PeerConnection.OnTrack(c.Speaker) //TODO: Uncomment to play client audio
 
 	// Set the handler for ICE connection state
 	// This will notify you when the peer has connected/disconnected

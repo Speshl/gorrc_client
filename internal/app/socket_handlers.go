@@ -22,7 +22,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	newConnection, err := NewConnection(context.Background(), socketConn, a.commandChannel, a.hudChannel)
+	newConnection, err := NewConnection(context.Background(), socketConn, a.commandChannel, a.hudChannel, a.speaker.TrackPlayer)
 	if err != nil {
 		log.Printf("failed creating connection on offer: %s\n", err.Error())
 		return
