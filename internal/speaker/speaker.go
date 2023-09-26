@@ -13,10 +13,10 @@ import (
 )
 
 var soundMap = map[string]string{
-	"startup":             "./internal/carspeaker/audio/startup.wav",
-	"shutdown":            "./internal/carspeaker/audio/shutting_down.wav",
-	"client_connected":    "./internal/carspeaker/audio/connected.wav",
-	"client_disconnected": "./internal/carspeaker/audio/disconnected.wav",
+	"startup":             "./internal/speaker/audio/startup.wav",
+	"shutdown":            "./internal/speaker/audio/shutting_down.wav",
+	"client_connected":    "./internal/speaker/audio/connected.wav",
+	"client_disconnected": "./internal/speaker/audio/disconnected.wav",
 }
 
 type Speaker struct {
