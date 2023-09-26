@@ -1,8 +1,6 @@
 package models
 
 import (
-	"time"
-
 	"github.com/google/uuid"
 	"github.com/pion/webrtc/v3"
 )
@@ -40,7 +38,7 @@ type Offer struct {
 type ControlState struct {
 	Axes      []float64 `json:"axes"`
 	BitButton uint32    `json:"bit_buttons"`
-	TimeStamp time.Time `json:"time_stamp"`
+	TimeStamp uint64    `json:"time_stamp"`
 	Buttons   []bool
 }
 

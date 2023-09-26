@@ -174,7 +174,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 	commandTicker := time.NewTicker(33 * time.Millisecond) //30hz
 	ctx, cancel := context.WithCancel(ctx)
 	latestCommand := models.ControlState{
-		TimeStamp: time.Now(),
+		TimeStamp: uint64(time.Now().Unix()),
 	}
 	used := true
 	commandsSeen := 0
@@ -213,11 +213,11 @@ func (c *Crawler) Start(ctx context.Context) error {
 				return ctx.Err()
 			}
 			commandsSeen++
-			if command.TimeStamp.After(latestCommand.TimeStamp) {
+			if command.TimeStamp > latestCommand.TimeStamp {
 				latestCommand = command
 				used = false
 			} else {
-				log.Println("got a command out of order - last: %s new:%s\n", latestCommand.TimeStamp, command.TimeStamp)
+				log.Printf("got a command out of order - last: %s new:%s\n", latestCommand.TimeStamp, command.TimeStamp)
 			}
 		}
 	}
