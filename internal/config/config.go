@@ -16,8 +16,8 @@ const (
 	DefaultCarKey   = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
 	DefaultPassword = ""
 
-	DefaultMaxPulse = 2250
-	DefaultMinPulse = 750
+	DefaultMaxPulse = 2250 //2000
+	DefaultMinPulse = 750  //1000
 	DefaultInverted = false
 	DefaultOffset   = 0
 
@@ -30,6 +30,11 @@ const (
 	DefaultProfile        = "high"
 	DefaultMode           = ""
 
+	// Default Speaker Options
+	DefaultSpeakerDevice = "0"
+	DefaultSpeakerVolume = "5.0"
+
+	// Default Command Options
 	DefaultAddress   = 0x40
 	DefaultI2CDevice = "/dev/i2c-1"
 )
@@ -40,6 +45,7 @@ type Config struct {
 	Password   string
 	CommandCfg CommandConfig
 	CamCfg     CamConfig
+	SpeakerCfg SpeakerConfig
 }
 
 type CommandConfig struct {
@@ -73,6 +79,11 @@ type CamConfig struct {
 	Mode           string
 }
 
+type SpeakerConfig struct {
+	Device string
+	Volume string
+}
+
 func GetConfig() Config {
 	cfg := Config{
 		Server:     GetStringEnv("SERVER", DefaultServer),
@@ -80,6 +91,7 @@ func GetConfig() Config {
 		Password:   GetStringEnv("CARPASSWORD", DefaultPassword),
 		CommandCfg: GetCommandConfig(),
 		CamCfg:     GetCamConfig(),
+		SpeakerCfg: GetSpeakerConfig(),
 	}
 
 	log.Printf("app Config: \n%+v\n", cfg)
@@ -121,6 +133,13 @@ func GetCamConfig() CamConfig {
 		HorizontalFlip: GetBoolEnv("HFLIP", DefaultHorizontalFlip),
 		Profile:        GetStringEnv("PROFILE", DefaultProfile),
 		Mode:           GetStringEnv("MODE", DefaultMode),
+	}
+}
+
+func GetSpeakerConfig() SpeakerConfig {
+	return SpeakerConfig{
+		Device: GetStringEnv("SPEAKERDEVICE", DefaultSpeakerDevice),
+		Volume: GetStringEnv("SPEAKERVOLUME", DefaultSpeakerVolume),
 	}
 }
 

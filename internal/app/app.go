@@ -16,6 +16,7 @@ import (
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/gst"
 	"github.com/Speshl/gorrc_client/internal/models"
+	"github.com/Speshl/gorrc_client/internal/speaker"
 	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
 	"github.com/Speshl/gorrc_client/internal/vehicle_type/crawler"
 	socketio "github.com/googollee/go-socket.io"
@@ -38,7 +39,9 @@ type App struct {
 	commandChannel chan models.ControlState
 	hudChannel     chan models.Hud
 
-	// speaker *carspeaker.CarSpeaker
+	speakerChannel chan string
+	speaker        *speaker.Speaker
+
 	// mic     *carmic.CarMic
 	cam     *cam.Cam
 	command command.CommandIFace
@@ -49,6 +52,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 
 	commandChannel := make(chan models.ControlState, 100)
 	hudChannel := make(chan models.Hud, 100)
+	speakerChannel := make(chan string, 100)
 
 	command := pca9685.NewCommand(cfg.CommandCfg)
 
@@ -60,7 +64,9 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		ctxCancel:      cancel,
 		commandChannel: commandChannel,
 		hudChannel:     hudChannel,
+		speakerChannel: speakerChannel,
 		car:            crawler.NewCrawler(commandChannel, hudChannel, command),
+		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
 	}
 }
 
@@ -100,6 +106,8 @@ func (a *App) Start() error {
 		a.client.Close()
 	}()
 
+	a.speaker.Play(groupCtx, "startup")
+
 	//Start gstreamer loops
 	group.Go(func() error {
 		go func() {
@@ -109,6 +117,10 @@ func (a *App) Start() error {
 			gst.StartMainRecieveLoop() //Start gstreamer main recieve loop from main thread
 		}()
 		return nil
+	})
+
+	group.Go(func() error {
+		return a.speaker.Start(groupCtx)
 	})
 
 	//kill listener
