@@ -65,13 +65,14 @@ func (s *Speaker) Play(ctx context.Context, sound string) error {
 	}
 
 	//TODO: configure this to specify device
-	args := []string{
-		"-E",
-		"aplay",
-		//"-D", "hw:CARD=wm8960soundcard,DEV=0", //use default
-		soundPath,
-	}
-	cmd := exec.CommandContext(ctx, "sudo", args...)
+	// args := []string{
+	// 	"-E",
+	// 	"aplay",
+	// 	//"-D", "hw:CARD=wm8960soundcard,DEV=0", //use default
+	// 	soundPath,
+	// }
+	//cmd := exec.CommandContext(ctx, "sudo", args...)
+	cmd := exec.CommandContext(ctx, "aplay", soundPath)
 	err := cmd.Start()
 	if err != nil {
 		return fmt.Errorf("error starting audio playback - %w", err)
