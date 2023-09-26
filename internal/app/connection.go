@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
@@ -102,9 +103,9 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 				}
 			case <-pingTicker.C:
 				if c.PingOutput != nil {
-					encodedMsg, err := encode(models.Ping{TimeStamp: time.Now().UnixMilli()})
+					data, err := json.Marshal(models.Ping{TimeStamp: time.Now().UnixMilli()})
 					sent = true
-					err = c.PingOutput.SendText(encodedMsg)
+					err = c.PingOutput.Send(data)
 					if err != nil {
 						log.Printf("failed sending ping: error - %s\n", err.Error())
 						continue
