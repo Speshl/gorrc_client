@@ -22,7 +22,8 @@ type Connection struct {
 	CommandChannel chan models.ControlState
 	HudChannel     chan models.Hud
 
-	HudOutput *webrtc.DataChannel
+	HudOutput  *webrtc.DataChannel
+	PingOutput *webrtc.DataChannel
 }
 
 func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud) (*Connection, error) {
@@ -81,13 +82,14 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
 	go func() {
+		pingTicker := time.NewTicker(10 * time.Minute)
 		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
 		sent := true
 		hudToSend := models.Hud{}
 		for {
 			select {
 			case <-c.Ctx.Done():
-				log.Printf("stopping safety monitor: %s\n", c.Ctx.Err().Error())
+				log.Printf("stopping hud updater: %s\n", c.Ctx.Err().Error())
 				return
 			case hud, ok := <-c.HudChannel:
 				if !ok {
@@ -98,18 +100,27 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 					hudToSend = hud
 					sent = false
 				}
-			case <-hudTicker.C:
-				if !sent {
-					encodedHud, err := encode(hudToSend)
+			case <-pingTicker.C:
+				if c.PingOutput != nil {
+					encodedMsg, err := encode(models.Ping{TimeStamp: time.Now().UnixMilli()})
 					sent = true
-					err = c.HudOutput.SendText(encodedHud)
+					err = c.PingOutput.SendText(encodedMsg)
+					if err != nil {
+						log.Printf("failed sending ping: error - %s\n", err.Error())
+						continue
+					}
+				}
+			case <-hudTicker.C:
+				if !sent && c.HudOutput != nil {
+					encodedMsg, err := encode(hudToSend)
+					sent = true
+					err = c.HudOutput.SendText(encodedMsg)
 					if err != nil {
 						log.Printf("failed sending hud: error - %s\n", err.Error())
 						continue
 					}
 				}
 			}
-
 		}
 	}()
 	return nil

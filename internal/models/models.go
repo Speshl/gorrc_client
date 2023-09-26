@@ -45,3 +45,8 @@ type ControlState struct {
 type Hud struct {
 	Lines []string `json:"lines"`
 }
+
+type Ping struct {
+	Source    string `json:"source"`
+	TimeStamp int64  `json:"time_stamp"`
+}

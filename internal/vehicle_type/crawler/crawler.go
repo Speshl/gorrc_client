@@ -172,24 +172,19 @@ func (c *Crawler) Start(ctx context.Context) error {
 
 	safetyTicker := time.NewTicker(MaxTimeSinceLastCommand)
 	commandTicker := time.NewTicker(33 * time.Millisecond) //30hz
-	pingTicker := time.NewTicker(1 * time.Minute)
 	ctx, cancel := context.WithCancel(ctx)
 	latestCommand := models.ControlState{
 		TimeStamp: time.Now().Unix(),
 	}
 	used := true
 	commandsSeen := 0
+	ticksWithoutCommand := 0
 	for {
 		select {
 		case <-ctx.Done():
 			log.Printf("stopping safety monitor: %s\n", ctx.Err().Error())
 			cancel()
 			return ctx.Err()
-		case <-pingTicker.C:
-			if !c.Stopped {
-				timeDiff := time.Now().UnixMilli() - latestCommand.TimeStamp
-				log.Printf("ping: %d ms\n", timeDiff)
-			}
 		case <-safetyTicker.C:
 			if time.Since(c.LastCommandTime) > MaxTimeSinceLastCommand {
 				if !c.Stopped {
@@ -205,8 +200,12 @@ func (c *Crawler) Start(ctx context.Context) error {
 				c.SetCommand(latestCommand)
 				used = true
 				commandsSeen = 0
+				ticksWithoutCommand = 0
 			} else if !c.Stopped {
-				log.Println("command tick, but no new command")
+				if ticksWithoutCommand > 2 {
+					log.Println("command tick, but no new command")
+				}
+				ticksWithoutCommand++
 			}
 
 		case command, ok := <-c.CommandChannel:
