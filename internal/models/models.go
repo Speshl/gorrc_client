@@ -38,7 +38,7 @@ type Offer struct {
 type ControlState struct {
 	Axes      []float64 `json:"axes"`
 	BitButton uint32    `json:"bit_buttons"`
-	TimeStamp uint64    `json:"time_stamp"`
+	TimeStamp int64     `json:"time_stamp"`
 	Buttons   []bool
 }
 
