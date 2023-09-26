@@ -82,7 +82,7 @@ func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample,
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
 	go func() {
-		pingTicker := time.NewTicker(10 * time.Minute)
+		pingTicker := time.NewTicker(10 * time.Second)
 		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
 		sent := true
 		hudToSend := models.Hud{}
