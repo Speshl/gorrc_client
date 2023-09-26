@@ -106,8 +106,6 @@ func (a *App) Start() error {
 		a.client.Close()
 	}()
 
-	a.speaker.Play(groupCtx, "startup")
-
 	//Start gstreamer loops
 	group.Go(func() error {
 		go func() {
@@ -170,6 +168,9 @@ func (a *App) Start() error {
 			}
 		}
 	})
+
+	time.Sleep(1 * time.Second)
+	a.speaker.Play(groupCtx, "startup")
 
 	err = group.Wait()
 	if err != nil {
