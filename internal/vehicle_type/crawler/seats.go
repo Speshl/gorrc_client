@@ -69,6 +69,11 @@ func (c *CrawlerSeat) ApplyCommand(state CrawlerState) CrawlerState {
 	defer c.lock.Unlock()
 
 	if c.active {
+		if c.lastCommand.TimeStamp == 0 {
+			c.lastCommand = c.nextCommand
+			return state
+		}
+
 		newState := c.seatCommandParser(c.lastCommand, c.nextCommand, state)
 		c.lastCommand = c.nextCommand
 		return newState

@@ -2,6 +2,7 @@ package vehicletype
 
 import (
 	"context"
+	"log"
 	"math"
 
 	"github.com/Speshl/gorrc_client/internal/models"
@@ -62,6 +63,16 @@ func BuildButtonMasks() []uint32 {
 }
 
 func NewPress(oldState, newState models.ControlState, buttonIndex int, f func()) {
+	if len(newState.Buttons) != len(oldState.Buttons) {
+		log.Println("length of buttons states mismatched")
+		return
+	}
+
+	if buttonIndex < 0 || buttonIndex > len(oldState.Buttons) {
+		log.Println("buttonIndex out of bounds")
+		return
+	}
+
 	if newState.Buttons[buttonIndex] && !oldState.Buttons[buttonIndex] {
 		f()
 	}
