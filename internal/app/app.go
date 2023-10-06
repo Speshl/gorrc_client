@@ -85,7 +85,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		seats:          seats,
 		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
 		cams:           make([]*cam.Cam, 0, len(cfg.CamCfgs)),
-		userConns:      make([]*Connection, 0, cfg.ServerCfg.SeatCount),
+		userConns:      make([]*Connection, cfg.ServerCfg.SeatCount),
 	}
 }
 
