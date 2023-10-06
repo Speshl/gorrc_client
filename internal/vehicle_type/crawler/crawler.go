@@ -45,7 +45,7 @@ func NewCrawlerSeats(seats []models.Seat) []vehicletype.VehicleSeatIFace[Crawler
 		case 0:
 			crawlerSeats = append(crawlerSeats, NewDriverSeat(&seats[i]))
 		case 1:
-			//crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i], state))
+			crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i]))
 		}
 	}
 	return crawlerSeats
@@ -110,6 +110,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 // mergeSeatStates merges multiple states into one state. For cases where two seats have control over 1 axis, you can determine mixing here
 func (c *Crawler) mergeSeatStates(states []CrawlerState) CrawlerState {
 	if len(states) < 1 {
+		log.Println("no crawler states given, so making an empty one")
 		return NewCrawlerState()
 	}
 
@@ -123,6 +124,7 @@ func (c *Crawler) applyState(state CrawlerState) error {
 	c.state = state
 
 	commands := c.buildCommands(c.state)
+	log.Println("sending commands to driver: %+v\n", commands)
 	err := c.commandDriver.SetMany(commands)
 	if err != nil {
 		return fmt.Errorf("failed setting crawler commands: %w", err)

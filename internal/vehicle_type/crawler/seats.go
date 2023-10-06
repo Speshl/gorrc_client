@@ -10,6 +10,8 @@ import (
 	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
 )
 
+const saftyTime = 200 * time.Millisecond
+
 func NewDriverSeat(seat *models.Seat) *CrawlerSeat {
 	return &CrawlerSeat{
 		seat:              seat,
@@ -26,6 +28,7 @@ func NewPassengerSeat(seat *models.Seat) *CrawlerSeat {
 		seatCommandParser: passengerParser,
 		seatType:          "passenger",
 		active:            false,
+		buttonMasks:       vehicletype.BuildButtonMasks(),
 	}
 }
 
@@ -36,7 +39,7 @@ func (c *CrawlerSeat) Init() error {
 func (c *CrawlerSeat) Start(ctx context.Context) error {
 	log.Printf("starting %s seat\n", c.seatType)
 
-	saftyTicker := time.NewTicker(200 * time.Millisecond)
+	saftyTicker := time.NewTicker(saftyTime)
 	for {
 		select {
 		case <-ctx.Done():
@@ -44,7 +47,7 @@ func (c *CrawlerSeat) Start(ctx context.Context) error {
 			return ctx.Err()
 		case <-saftyTicker.C:
 			c.lock.Lock()
-			if c.active && time.Since(c.lastCommandTime) > 200*time.Millisecond {
+			if c.active && time.Since(c.lastCommandTime) > saftyTime {
 				//log.Printf("setting %s seat inactive due to time since last command\n", c.seatType)
 				c.active = false
 			}
