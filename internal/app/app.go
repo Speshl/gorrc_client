@@ -99,7 +99,7 @@ func (a *App) RegisterHandlers() error {
 
 	a.client.OnEvent("register_success", a.onRegisterSuccess)
 
-	log.Println("attemping to connect to server...")
+	log.Println("attempting to connect to server...")
 	err := a.client.Connect() //Client must have atleast 1 event handler to work
 	if err != nil {
 		return fmt.Errorf("error connecting to server - %w", err)

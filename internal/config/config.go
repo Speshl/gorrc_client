@@ -98,6 +98,7 @@ type SpeakerConfig struct {
 
 func GetConfig() Config {
 	cfg := Config{
+		ServerCfg:  GetServerConfig(),
 		CommandCfg: GetCommandConfig(),
 		CamCfgs:    GetCamConfig(),
 		SpeakerCfg: GetSpeakerConfig(),
