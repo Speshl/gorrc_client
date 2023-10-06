@@ -70,6 +70,7 @@ func (c *Crawler) Init() error {
 }
 
 func (c *Crawler) Start(ctx context.Context) error {
+	log.Println("starting crawler")
 	errGroup, errGroupCtx := errgroup.WithContext(ctx)
 
 	for i := range c.seats {

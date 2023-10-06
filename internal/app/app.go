@@ -70,6 +70,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 	var car vehicletype.Vehicle
 	switch cfg.CommandCfg.CarType {
 	case "crawler":
+		fallthrough
 	default:
 		car = crawler.NewCrawler(command, seats)
 	}
@@ -157,20 +158,22 @@ func (a *App) Start() error {
 			a.ctxCancel()
 			return fmt.Errorf("received signal: %s\n", sig)
 		case <-groupCtx.Done():
-			fmt.Printf("closing signal goroutine\n")
+			log.Printf("closing signal goroutine\n")
 			return groupCtx.Err()
 		}
 	})
 
 	//Start Cameras
-	for _, cam := range a.cams {
+	for i, cam := range a.cams {
 		group.Go(func() error {
+			log.Println("starting camera %d\n", i)
 			return cam.Start(groupCtx)
 		})
 	}
 
 	//Start car
 	group.Go(func() error {
+		log.Printf("Starting car")
 		return a.car.Start(groupCtx)
 	})
 
