@@ -12,7 +12,7 @@ import (
 )
 
 func NewCrawler(commandDriver vehicletype.CommandDriverIFace, seats []models.Seat) *Crawler {
-	log.Println("setting up crawler with %d seats\n", len(seats))
+	log.Printf("setting up crawler with %d seats\n", len(seats))
 
 	crawlerState := NewCrawlerState()
 	return &Crawler{

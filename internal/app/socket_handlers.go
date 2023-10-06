@@ -10,47 +10,48 @@ import (
 )
 
 func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
+	log.Println("Offer recieved")
 	if len(msgs) != 1 {
-		log.Printf("offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
+		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
 	}
 	msg := msgs[0]
 
 	offer := models.Offer{}
 	err := decode(msg, &offer)
 	if err != nil {
-		log.Printf("offer from %s failed unmarshaling: %s\n - msg - %s", socketConn.ID(), err.Error(), string(msg))
+		log.Printf("error: offer from %s failed unmarshaling: %s\n - msg - %s", socketConn.ID(), err.Error(), string(msg))
 		return
 	}
 
-	if offer.SeatNumber < a.cfg.ServerCfg.SeatCount || offer.SeatNumber > a.cfg.ServerCfg.SeatCount {
-		log.Printf("offer was for unsupported seat number: %d\n", offer.SeatNumber)
+	if offer.SeatNumber < 0 || offer.SeatNumber >= a.cfg.ServerCfg.SeatCount {
+		log.Printf("error: offer was for unsupported seat number: %d\n", offer.SeatNumber)
 		return
 	}
 
 	newConnection, err := NewConnection(context.Background(), socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
 	if err != nil {
-		log.Printf("failed creating connection on offer for seat %d: %s\n", offer.SeatNumber, err.Error())
+		log.Printf("error: failed creating connection on offer for seat %d: %s\n", offer.SeatNumber, err.Error())
 		return
 	}
 	a.userConns[offer.SeatNumber] = newConnection
 
 	err = a.userConns[offer.SeatNumber].RegisterHandlers(a.seats[offer.SeatNumber].AudioTracks, a.seats[offer.SeatNumber].VideoTracks)
 	if err != nil {
-		log.Printf("failed registering handelers for connection for seat %d: %s\n", offer.SeatNumber, err.Error())
+		log.Printf("error: failed registering handelers for connection for seat %d: %s\n", offer.SeatNumber, err.Error())
 		return
 	}
 
 	// Set the received offer as the remote description
 	err = a.userConns[offer.SeatNumber].PeerConnection.SetRemoteDescription(offer.Offer)
 	if err != nil {
-		log.Printf("failed to set remote description: %s\n", err)
+		log.Printf("error: failed to set remote description: %s\n", err)
 		return
 	}
 
 	// Create answer
 	answer, err := a.userConns[offer.SeatNumber].PeerConnection.CreateAnswer(nil)
 	if err != nil {
-		log.Printf("Failed to create answer: %s\n", err)
+		log.Printf("error: failed to create answer: %s\n", err)
 		return
 	}
 
@@ -60,7 +61,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	// Sets the LocalDescription, and starts our UDP listeners
 	err = a.userConns[offer.SeatNumber].PeerConnection.SetLocalDescription(answer)
 	if err != nil {
-		log.Println("Failed to set local description:", err)
+		log.Println("error: failed to set local description:", err)
 		return
 	}
 
@@ -76,10 +77,10 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 
 	encodedAnswer, err := encode(answerReq)
 	if err != nil {
-		log.Printf("Failed encoding answer: %s", err.Error())
+		log.Printf("error: failed encoding answer: %s", err.Error())
 		return
 	}
-	log.Println("sending answer")
+	log.Println("accepting/answering offer for seat %d\n", offer.SeatNumber)
 	a.client.Emit("answer", encodedAnswer)
 }
 
@@ -87,21 +88,21 @@ func (a *App) onICECandidate(socketConn socketio.Conn, msg string) {
 	decodedMsg := ""
 	err := decode(msg, &decodedMsg)
 	if err != nil {
-		log.Printf("ice candidate from %s failed unmarshaling: %s\n", socketConn.ID(), string(msg))
+		log.Printf("error: ice candidate from %s failed unmarshaling: %s\n", socketConn.ID(), string(msg))
 		return
 	}
 }
 
 func (a *App) onRegisterSuccess(socketConn socketio.Conn, msgs []string) {
 	if len(msgs) != 1 {
-		log.Printf("offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
+		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
 	}
 	msg := msgs[0]
 
 	decodedMsg := models.ConnectResp{}
 	err := decode(msg, &decodedMsg)
 	if err != nil {
-		log.Printf("ice candidate from %s failed unmarshaling: %s\n", socketConn.ID(), string(msg))
+		log.Printf("error: ice candidate from %s failed unmarshaling: %s\n", socketConn.ID(), string(msg))
 		return
 	}
 

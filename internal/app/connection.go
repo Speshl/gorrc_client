@@ -114,7 +114,7 @@ func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSampl
 					sent = true
 					err = c.PingOutput.Send(data)
 					if err != nil {
-						log.Printf("failed sending ping: error - %s\n", err.Error())
+						log.Printf("error: failed sending ping: error - %s\n", err.Error())
 						continue
 					}
 				}
@@ -124,7 +124,7 @@ func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSampl
 					sent = true
 					err = c.HudOutput.SendText(encodedMsg)
 					if err != nil {
-						log.Printf("failed sending hud: error - %s\n", err.Error())
+						log.Printf("error: failed sending hud: error - %s\n", err.Error())
 						continue
 					}
 				}

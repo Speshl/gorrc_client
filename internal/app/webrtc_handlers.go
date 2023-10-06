@@ -51,7 +51,7 @@ func (c *Connection) onCommandHandler(data []byte) {
 	state := models.ControlState{}
 	err := json.Unmarshal(data, &state)
 	if err != nil {
-		log.Printf("failed unmarshalling data channel msg: %s\n", data)
+		log.Printf("error: failed unmarshalling data channel msg: %s\n", data)
 		return
 	}
 	c.CommandChannel <- state
@@ -61,7 +61,7 @@ func (c *Connection) onPingHandler(data []byte) {
 	ping := models.Ping{}
 	err := json.Unmarshal(data, &ping)
 	if err != nil {
-		log.Printf("failed unmarshalling data channel msg: %s\n", data)
+		log.Printf("error: failed unmarshalling data channel msg: %s\n", data)
 		return
 	}
 	if ping.Source == PingSourceName {

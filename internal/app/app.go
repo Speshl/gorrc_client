@@ -166,7 +166,7 @@ func (a *App) Start() error {
 	//Start Cameras
 	for i, cam := range a.cams {
 		group.Go(func() error {
-			log.Println("starting camera %d\n", i)
+			log.Printf("starting camera %d\n", i)
 			return cam.Start(groupCtx)
 		})
 	}
