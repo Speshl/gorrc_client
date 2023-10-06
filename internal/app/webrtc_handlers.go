@@ -54,7 +54,6 @@ func (c *Connection) onCommandHandler(data []byte) {
 		log.Printf("failed unmarshalling data channel msg: %s\n", data)
 		return
 	}
-	//log.Println("command recieved")
 	c.CommandChannel <- state
 }
 

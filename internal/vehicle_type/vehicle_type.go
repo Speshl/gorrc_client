@@ -1,4 +1,4 @@
-package vehicleType
+package vehicletype
 
 import (
 	"context"
@@ -7,9 +7,29 @@ import (
 	"github.com/Speshl/gorrc_client/internal/models"
 )
 
-type VehicleType interface {
-	Start(ctx context.Context) error
-	String() string
+type DriverCommand struct {
+	Name  string
+	Value float64
+	Min   float64
+	Max   float64
+}
+
+type CommandDriverIFace interface {
+	Init() error
+	Set(DriverCommand) error
+	SetMany([]DriverCommand) error
+}
+
+type Vehicle interface {
+	Init() error
+	Start(context.Context) error
+	//String() string
+}
+
+type VehicleSeatIFace[T any] interface {
+	Init() error
+	Start(context.Context) error
+	ApplyCommand(T) T
 }
 
 func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {

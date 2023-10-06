@@ -12,7 +12,7 @@ import (
 func main() {
 	cfg := config.GetConfig()
 
-	socketURI := fmt.Sprintf("http://%s", cfg.Server)
+	socketURI := fmt.Sprintf("http://%s", cfg.ServerCfg.Server)
 	client, err := socketio.NewClient(socketURI, nil)
 	if err != nil {
 		err = fmt.Errorf("error creating client - %w", err)

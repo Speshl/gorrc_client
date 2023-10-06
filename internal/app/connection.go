@@ -63,14 +63,14 @@ func (c *Connection) Disconnect() {
 	c.PeerConnection.Close()
 }
 
-func (c *Connection) RegisterHandlers(audioTrack *webrtc.TrackLocalStaticSample, videoTrack *webrtc.TrackLocalStaticSample) error {
+func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSample, videoTrack []*webrtc.TrackLocalStaticSample) error {
 
-	// _, err := c.PeerConnection.AddTrack(audioTrack)
+	// _, err := c.PeerConnection.AddTrack(audioTrack) //TODO all all audio tracks
 	// if err != nil {
 	// 	return fmt.Errorf("error adding audio track: %w", err)
 	// }
 
-	_, err := c.PeerConnection.AddTrack(videoTrack)
+	_, err := c.PeerConnection.AddTrack(videoTrack[0]) //TODO add all video tracks
 	if err != nil {
 		return fmt.Errorf("error adding video track: %w", err)
 	}

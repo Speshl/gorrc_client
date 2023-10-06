@@ -5,6 +5,7 @@ import (
 	"log"
 
 	"github.com/Speshl/gorrc_client/internal/config"
+	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
 	"github.com/googolgl/go-i2c"
 	"github.com/googolgl/go-pca9685"
 )
@@ -19,7 +20,7 @@ const (
 	MaxSupportedServos = 16
 )
 
-type Command struct {
+type CommandDriver struct {
 	cfg    config.CommandConfig
 	servos map[string]Servo
 	driver *pca9685.PCA9685
@@ -32,13 +33,13 @@ type Servo struct {
 	servo    *pca9685.Servo
 }
 
-func NewCommand(cfg config.CommandConfig) *Command {
-	return &Command{
+func NewCommand(cfg config.CommandConfig) *CommandDriver {
+	return &CommandDriver{
 		cfg: cfg,
 	}
 }
 
-func (c *Command) Init() error {
+func (c *CommandDriver) Init() error {
 	i2c, err := i2c.New(c.cfg.Address, c.cfg.I2CDevice)
 	if err != nil {
 		return fmt.Errorf("error starting i2c with address - %w", err)
@@ -69,24 +70,34 @@ func (c *Command) Init() error {
 	return nil
 }
 
-func (c *Command) CenterAll() {
+func (c *CommandDriver) CenterAll() {
 	log.Println("centering all servos")
 	for i := range c.servos {
 		c.servos[i].servo.Fraction(0.5)
 	}
 }
 
-func (c *Command) Set(name string, value, min, max float64) error {
-	val, ok := c.servos[name]
+func (c *CommandDriver) SetMany(commands []vehicletype.DriverCommand) error {
+	for i := range commands {
+		err := c.Set(commands[i])
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func (c *CommandDriver) Set(command vehicletype.DriverCommand) error {
+	val, ok := c.servos[command.Name]
 	if ok {
-		mappedValue := mapToRange(value+val.offset, min, max, MinValue, MaxValue)
-		if c.servos[name].inverted {
+		mappedValue := mapToRange(command.Value+val.offset, command.Min, command.Max, MinValue, MaxValue)
+		if c.servos[command.Name].inverted {
 			mappedValue = MaxValue - mappedValue
 		}
 
-		err := c.servos[name].servo.Fraction(float32(mappedValue))
+		err := c.servos[command.Name].servo.Fraction(float32(mappedValue))
 		if err != nil {
-			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", name, mappedValue, err)
+			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", command.Name, mappedValue, err)
 		}
 	}
 	return nil

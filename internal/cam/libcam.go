@@ -84,9 +84,6 @@ func (c *Cam) StartStreaming(ctx context.Context) error {
 		default:
 			n, err := stdout.Read(p)
 			if err != nil {
-				// if err == io.EOF {
-				// 	return fmt.Errorf("[libcamera-vid] EOF")
-				// }
 				return fmt.Errorf("failed reading camera from std out: %w", err)
 			}
 

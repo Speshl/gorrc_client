@@ -10,11 +10,14 @@ import (
 
 const (
 	MaxSupportedServos = 16
+	MaxSupportedCams   = 2
 	AppEnvBase         = "GORRC_"
 
-	DefaultServer   = "127.0.0.1:8181"
-	DefaultCarKey   = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
-	DefaultPassword = ""
+	DefaultServer    = "127.0.0.1:8181"
+	DefaultCarKey    = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
+	DefaultCarType   = "crawler"
+	DefaultPassword  = ""
+	DefaultSeatCount = 1
 
 	DefaultMaxPulse = 2250 //2000
 	DefaultMinPulse = 750  //1000
@@ -22,6 +25,7 @@ const (
 	DefaultOffset   = 0
 
 	// Default Camera Options
+	DefaultCamEnable      = false
 	DefaultWidth          = "320"
 	DefaultHeight         = "240"
 	DefaultFPS            = "30"
@@ -40,15 +44,21 @@ const (
 )
 
 type Config struct {
-	Server     string
-	Key        string
-	Password   string
+	ServerCfg  ServerConfig
 	CommandCfg CommandConfig
-	CamCfg     CamConfig
+	CamCfgs    []CamConfig
 	SpeakerCfg SpeakerConfig
 }
 
+type ServerConfig struct {
+	Server    string
+	Key       string
+	Password  string
+	SeatCount int
+}
+
 type CommandConfig struct {
+	CarType   string
 	Address   byte
 	I2CDevice string
 	ServoCfgs []ServoConfig
@@ -66,6 +76,8 @@ type ServoConfig struct {
 }
 
 type CamConfig struct {
+	Enabled        bool
+	Device         string
 	Width          string
 	Height         string
 	Fps            string
@@ -86,11 +98,8 @@ type SpeakerConfig struct {
 
 func GetConfig() Config {
 	cfg := Config{
-		Server:     GetStringEnv("SERVER", DefaultServer),
-		Key:        GetStringEnv("CARKEY", DefaultCarKey),
-		Password:   GetStringEnv("CARPASSWORD", DefaultPassword),
 		CommandCfg: GetCommandConfig(),
-		CamCfg:     GetCamConfig(),
+		CamCfgs:    GetCamConfig(),
 		SpeakerCfg: GetSpeakerConfig(),
 	}
 
@@ -98,8 +107,18 @@ func GetConfig() Config {
 	return cfg
 }
 
+func GetServerConfig() ServerConfig {
+	return ServerConfig{
+		Server:    GetStringEnv("SERVER", DefaultServer),
+		Key:       GetStringEnv("CARKEY", DefaultCarKey),
+		Password:  GetStringEnv("CARPASSWORD", DefaultPassword),
+		SeatCount: GetIntEnv("SEATCOUNT", DefaultSeatCount),
+	}
+}
+
 func GetCommandConfig() CommandConfig {
 	commandCfg := CommandConfig{
+		CarType:   GetStringEnv("CARTYPE", DefaultCarType),
 		Address:   DefaultAddress, //  GetStringEnv("ADDRESS", DefaultAddress),
 		I2CDevice: GetStringEnv("I2CDEVICE", DefaultI2CDevice),
 		ServoCfgs: make([]ServoConfig, 0, MaxSupportedServos),
@@ -124,16 +143,26 @@ func GetCommandConfig() CommandConfig {
 	return commandCfg
 }
 
-func GetCamConfig() CamConfig {
-	return CamConfig{
-		Width:          GetStringEnv("WIDTH", DefaultWidth),
-		Height:         GetStringEnv("HEIGHT", DefaultHeight),
-		Fps:            GetStringEnv("FPS", DefaultFPS),
-		VerticalFlip:   GetBoolEnv("VFLIP", DefaultVerticalFlip),
-		HorizontalFlip: GetBoolEnv("HFLIP", DefaultHorizontalFlip),
-		Profile:        GetStringEnv("PROFILE", DefaultProfile),
-		Mode:           GetStringEnv("MODE", DefaultMode),
+func GetCamConfig() []CamConfig {
+	camCfgs := make([]CamConfig, 0, MaxSupportedCams)
+	for i := 0; i < MaxSupportedCams; i++ {
+		camPrefix := fmt.Sprintf("CAM%d_", i)
+		camCfgs = append(camCfgs, CamConfig{
+			Enabled:        GetBoolEnv(camPrefix+"ENABLED", DefaultCamEnable),
+			Device:         GetStringEnv(camPrefix+"DEVICE", DefaultSpeakerDevice),
+			Width:          GetStringEnv(camPrefix+"WIDTH", DefaultWidth),
+			Height:         GetStringEnv(camPrefix+"HEIGHT", DefaultHeight),
+			Fps:            GetStringEnv(camPrefix+"FPS", DefaultFPS),
+			VerticalFlip:   GetBoolEnv(camPrefix+"VFLIP", DefaultVerticalFlip),
+			HorizontalFlip: GetBoolEnv(camPrefix+"HFLIP", DefaultHorizontalFlip),
+			Profile:        GetStringEnv(camPrefix+"PROFILE", DefaultProfile),
+			Mode:           GetStringEnv(camPrefix+"MODE", DefaultMode),
+		})
+		if i == 0 {
+			camCfgs[i].Enabled = true //force cam 0 to always be on
+		}
 	}
+	return camCfgs
 }
 
 func GetSpeakerConfig() SpeakerConfig {
@@ -178,6 +207,6 @@ func GetStringEnv(env string, defaultValue string) string {
 	if !found {
 		return defaultValue
 	} else {
-		return strings.Trim(envValue, "\r")
+		return strings.ToLower(strings.Trim(envValue, "\r"))
 	}
 }

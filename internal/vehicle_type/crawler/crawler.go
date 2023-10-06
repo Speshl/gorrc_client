@@ -4,300 +4,178 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"sync"
 	"time"
 
-	"github.com/Speshl/gorrc_client/internal/command"
 	"github.com/Speshl/gorrc_client/internal/models"
-	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	"golang.org/x/sync/errgroup"
 )
 
-const (
-	//Button Maps
-	TrimLeft  = 0
-	TrimRight = 1
-	CamCenter = 2
-	UpShift   = 3
-	DownShift = 4
+func NewCrawler(commandDriver vehicletype.CommandDriverIFace, seats []models.Seat) *Crawler {
+	log.Println("setting up crawler with %d seats\n", len(seats))
 
-	VolumeMute = 20
-	VolumeUp   = 21
-	VolumeDown = 22
-
-	//TransTypes
-	TransTypeSequential = "sequential"
-	TransTypeHPattern   = "hpattern"
-
-	TopGear                 = 6
-	MaxTimeSinceLastCommand = 500 * time.Millisecond
-
-	MaxPanPerCycle  = 0.005
-	MaxTiltPerCycle = 0.005
-
-	MaxTrimPerCycle = .01
-
-	MaxVolumePerCycle = 10
-
-	MaxVolume = 100
-	MinVolume = 0
-
-	DeadZone = 0.05
-
-	MaxInput  = 1.0
-	MinInput  = -1.0
-	MaxOutput = 1.0
-	MinOutput = -1.0
-)
-
-var TransTypeMap = map[int]string{
-	0: TransTypeSequential,
-	1: TransTypeHPattern,
-}
-
-var GearRatios = map[int]Ratio{
-	-1: {
-		Name: "R",
-		Max:  0.0,
-		Min:  -0.4,
-	},
-	0: {
-		Name: "N",
-		Max:  0.0,
-		Min:  0.0,
-	},
-	1: {
-		Name: "1",
-		Max:  0.1,
-		Min:  -0.1,
-	},
-	2: {
-		Name: "2",
-		Max:  0.3,
-		Min:  -0.2,
-	},
-	3: {
-		Name: "3",
-		Max:  0.5,
-		Min:  -0.2,
-	},
-	4: {
-		Name: "4",
-		Max:  0.7,
-		Min:  -0.2,
-	},
-	5: {
-		Name: "5",
-		Max:  0.9,
-		Min:  -0.2,
-	},
-	6: {
-		Name: "6",
-		Max:  1.0,
-		Min:  -0.2,
-	},
-}
-
-type Ratio struct {
-	Name string
-	Max  float64
-	Min  float64
-}
-
-type Crawler struct {
-	command command.CommandIFace
-
-	lock      sync.RWMutex
-	Stopped   bool
-	Esc       float64
-	Steer     float64
-	SteerTrim float64
-	Pan       float64
-	Tilt      float64
-
-	ButtonMasks []uint32
-	Buttons     []bool
-
-	//Transmission
-	Gear      int
-	Ratios    map[int]Ratio
-	TransType string //use goenum
-
-	//sound stuff
-	Volume int
-
-	CommandChannel chan models.ControlState
-	HudChannel     chan models.Hud
-
-	LastCommand     *models.ControlState
-	LastCommandTime time.Time
-}
-
-func NewCrawler(commandChan chan models.ControlState, hudChan chan models.Hud, command command.CommandIFace) *Crawler {
+	crawlerState := NewCrawlerState()
 	return &Crawler{
-		Stopped:        true,
-		Gear:           0,
-		Esc:            0.0,
-		Steer:          0.0,
-		Pan:            0.0,
-		Tilt:           0.0,
-		Volume:         50,
-		ButtonMasks:    vehicleType.BuildButtonMasks(),
-		Buttons:        make([]bool, 0, 32),
-		Ratios:         GearRatios,
-		HudChannel:     hudChan,
-		CommandChannel: commandChan,
-
-		command: command,
+		commandDriver: commandDriver,
+		buttonMasks:   vehicletype.BuildButtonMasks(),
+		buttons:       make([]bool, 0, 32),
+		state:         crawlerState,
+		seats:         NewCrawlerSeats(seats),
 	}
 }
 
-func (c *Crawler) updateHud() {
-	c.HudChannel <- models.Hud{
-		Lines: []string{
-			fmt.Sprintf("Steer:%.2f|Esc:%.2f|Pan:%.2f|Tilt:%.2f", c.Steer, c.Esc, c.Pan, c.Tilt),
-			fmt.Sprintf("Trim:%.2f|Gear:%s|Vol:%d", c.SteerTrim, c.Ratios[c.Gear].Name, c.Volume),
-		},
+func NewCrawlerState() CrawlerState {
+	return CrawlerState{
+		Gear:  0,
+		Esc:   0.0,
+		Steer: 0.0,
+		Pan:   0.0,
+		Tilt:  0.0,
+
+		Trigger:    0.0,
+		TurretPan:  0.0,
+		TurretTilt: 0.0,
+
+		Ratios: GearRatios,
 	}
 }
 
-func (c *Crawler) String() string {
-	return fmt.Sprintf("Steer: %f | Esc: %f | Pan: %f | Tilt: %f | Trim: %f | Gear: %s | Volume: %d", c.Steer, c.Esc, c.Pan, c.Tilt, c.SteerTrim, c.Ratios[c.Gear].Name, c.Volume)
+func NewCrawlerSeats(seats []models.Seat) []vehicletype.VehicleSeatIFace[CrawlerState] {
+	crawlerSeats := make([]vehicletype.VehicleSeatIFace[CrawlerState], 0, len(seats))
+	for i := range seats {
+		switch i {
+		case 0:
+			crawlerSeats = append(crawlerSeats, NewDriverSeat(&seats[i]))
+		case 1:
+			//crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i], state))
+		}
+	}
+	return crawlerSeats
+}
+
+func (c *Crawler) Init() error {
+	err := c.commandDriver.Init()
+	if err != nil {
+		return fmt.Errorf("failed initializing crawler command interface: %w", err)
+	}
+
+	for i := range c.seats {
+		err = c.seats[i].Init()
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 func (c *Crawler) Start(ctx context.Context) error {
-	err := c.command.Init()
-	if err != nil {
-		return fmt.Errorf("failed initializing command interface: %w", err)
+	errGroup, errGroupCtx := errgroup.WithContext(ctx)
+
+	for i := range c.seats {
+		errGroup.Go(func() error {
+			return c.seats[i].Start(errGroupCtx)
+		})
 	}
 
-	safetyTicker := time.NewTicker(MaxTimeSinceLastCommand)
-	commandTicker := time.NewTicker(33 * time.Millisecond) //30hz
-	ctx, cancel := context.WithCancel(ctx)
-	latestCommand := models.ControlState{
-		TimeStamp: time.Now().Unix(),
-	}
-	used := true
-	commandsSeen := 0
-	ticksWithoutCommand := 0
-	for {
-		select {
-		case <-ctx.Done():
-			log.Printf("stopping safety monitor: %s\n", ctx.Err().Error())
-			cancel()
-			return ctx.Err()
-		case <-safetyTicker.C:
-			if time.Since(c.LastCommandTime) > MaxTimeSinceLastCommand {
-				if !c.Stopped {
-					log.Println("time since last command is to long, applying stop command")
-					c.resetCar()
-				}
-			}
-		case <-commandTicker.C:
-			if !used {
-				if commandsSeen > 2 {
-					log.Printf("skipped some commands before send: %d\n", commandsSeen)
-				}
-				c.SetCommand(latestCommand)
-				used = true
-				commandsSeen = 0
-				ticksWithoutCommand = 0
-			} else if !c.Stopped {
-				if ticksWithoutCommand > 2 {
-					log.Println("command tick, but no new command")
-				}
-				ticksWithoutCommand++
-			}
-
-		case command, ok := <-c.CommandChannel:
-			if !ok {
-				log.Println("control state channel closed")
-				cancel()
+	errGroup.Go(func() error {
+		commandTicker := time.NewTicker(33 * time.Millisecond)
+		for {
+			select {
+			case <-errGroupCtx.Done():
+				log.Printf("stopping crawer state syncer: %s\n", ctx.Err().Error())
 				return ctx.Err()
-			}
-			commandsSeen++
-			if command.TimeStamp > latestCommand.TimeStamp {
-				latestCommand = command
-				used = false
-			} else {
-				log.Println("got a command out of order")
+			case <-commandTicker.C:
+				statesWithNewCommand := make([]CrawlerState, 0, len(c.seats))
+				for i := range c.seats {
+					newState := c.seats[i].ApplyCommand(c.state)
+					statesWithNewCommand = append(statesWithNewCommand, newState)
+				}
+
+				mixedState := c.mergeSeatStates(statesWithNewCommand)
+				err := c.applyState(mixedState)
+				if err != nil {
+					return fmt.Errorf("failed applying crawler state: %w", err)
+				}
 			}
 		}
+	})
+
+	err := errGroup.Wait()
+	if err != nil {
+		return fmt.Errorf("crawler error group closed: %w", err)
 	}
+	return nil
 }
 
-func (c *Crawler) resetCar() {
-	c.Steer = 0.0
-	c.Esc = 0.0
-	c.Pan = 0.0
-	c.Tilt = 0.0
+// mergeSeatStates merges multiple states into one state. For cases where two seats have control over 1 axis, you can determine mixing here
+func (c *Crawler) mergeSeatStates(states []CrawlerState) CrawlerState {
+	if len(states) < 1 {
+		return NewCrawlerState()
+	}
 
-	c.SteerTrim = 0
-	c.Gear = 0
-	c.Volume = 50
-	c.Stopped = true
+	return states[0] //TODO actually merge instead of just taking driver commands
 }
 
-func (c *Crawler) SetCommand(state models.ControlState) {
+func (c *Crawler) applyState(state CrawlerState) error {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 
-	//Parse new state buttons
-	state.Buttons = vehicleType.ParseButtons(state.BitButton, c.ButtonMasks)
+	c.state = state
 
-	//if first time through just save state and wait for next
-	if c.LastCommand == nil {
-		c.LastCommand = &state
-		return
+	commands := c.buildCommands(c.state)
+	err := c.commandDriver.SetMany(commands)
+	if err != nil {
+		return fmt.Errorf("failed setting crawler commands: %w", err)
 	}
-	c.Stopped = false
 
-	//Handle buttons
-	vehicleType.NewPress(*c.LastCommand, state, UpShift, c.upShift)
-	vehicleType.NewPress(*c.LastCommand, state, DownShift, c.downShift)
-
-	vehicleType.NewPress(*c.LastCommand, state, TrimLeft, c.trimLeft)
-	vehicleType.NewPress(*c.LastCommand, state, TrimRight, c.trimRight)
-
-	vehicleType.NewPress(*c.LastCommand, state, CamCenter, c.camCenter)
-
-	vehicleType.NewPress(*c.LastCommand, state, VolumeMute, c.volumeMute)
-	vehicleType.NewPress(*c.LastCommand, state, VolumeUp, c.volumeUp)
-	vehicleType.NewPress(*c.LastCommand, state, VolumeDown, c.volumeDown)
-
-	//Handle Axes
-	c.mapSteer(state.Axes[0])
-	c.mapEsc(state.Axes[1], state.Axes[2])
-	c.mapPan(state.Axes[3])
-	c.mapTilt(state.Axes[4])
-
-	//log.Println(c.String())
-
-	//Save the state to compare new state against next time
-	c.LastCommand = &state
-	c.LastCommandTime = time.Now()
-
-	c.sendCommand()
-	c.updateHud()
+	return nil
 }
 
-func (c *Crawler) sendCommand() {
-	err := c.command.Set("steer", c.Steer, MinOutput, MaxOutput)
-	if err != nil {
-		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
-	}
+func (c *Crawler) buildCommands(state CrawlerState) []vehicletype.DriverCommand {
+	return []vehicletype.DriverCommand{
+		{
+			Name:  "esc",
+			Value: state.Esc,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
+		{
+			Name:  "steer",
+			Value: state.Steer,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
+		{
+			Name:  "pan",
+			Value: state.Pan,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
+		{
+			Name:  "tilt",
+			Value: state.Tilt,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
 
-	err = c.command.Set("esc", c.Esc, MinOutput, MaxOutput)
-	if err != nil {
-		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
-	}
-
-	err = c.command.Set("pan", c.Pan, MinOutput, MaxOutput)
-	if err != nil {
-		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
-	}
-
-	err = c.command.Set("tilt", c.Tilt, MinOutput, MaxOutput)
-	if err != nil {
-		log.Printf("failed setting %s servo value: %s", "steer", err.Error())
+		{
+			Name:  "trigger",
+			Value: state.Trigger,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
+		{
+			Name:  "turret_pan",
+			Value: state.TurretPan,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
+		{
+			Name:  "turrent_tilt",
+			Value: state.TurretTilt,
+			Min:   MaxOutput,
+			Max:   MaxOutput,
+		},
 	}
 }

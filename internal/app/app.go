@@ -11,62 +11,79 @@ import (
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/cam"
-	"github.com/Speshl/gorrc_client/internal/command"
 	pca9685 "github.com/Speshl/gorrc_client/internal/command/pca9685"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/gst"
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/speaker"
-	vehicleType "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
 	"github.com/Speshl/gorrc_client/internal/vehicle_type/crawler"
 	socketio "github.com/googollee/go-socket.io"
 	"golang.org/x/sync/errgroup"
 )
 
+const DriverSeatNum = 0
+const PassengerSeatNum = 1
+
 type App struct {
 	ctx       context.Context
 	ctxCancel context.CancelFunc
+	cfg       config.Config
 
-	car vehicleType.VehicleType
+	car vehicletype.Vehicle
 
 	carInfo   models.Car
 	trackInfo models.Track
 
-	client     *socketio.Client
-	connection *Connection
-	Cfg        config.Config
-
-	commandChannel chan models.ControlState
-	hudChannel     chan models.Hud
+	client *socketio.Client
 
 	speakerChannel chan string
 	speaker        *speaker.Speaker
-
 	// mic     *carmic.CarMic
-	cam     *cam.Cam
-	command command.CommandIFace
+	cams    []*cam.Cam
+	command vehicletype.CommandDriverIFace
+
+	seats     []models.Seat //number of available connections to this vehicle
+	userConns []*Connection
 }
 
 func NewApp(cfg config.Config, client *socketio.Client) *App {
 	ctx, cancel := context.WithCancel(context.Background())
 
-	commandChannel := make(chan models.ControlState, 100)
-	hudChannel := make(chan models.Hud, 100)
 	speakerChannel := make(chan string, 100)
 
 	command := pca9685.NewCommand(cfg.CommandCfg)
 
-	//TODO Support multiple car types
+	if cfg.ServerCfg.SeatCount < 1 || cfg.ServerCfg.SeatCount > 2 {
+		cfg.ServerCfg.SeatCount = config.DefaultSeatCount
+	}
+
+	seats := make([]models.Seat, 0, cfg.ServerCfg.SeatCount)
+	for i := 0; i < cfg.ServerCfg.SeatCount; i++ {
+		seats = append(seats, models.Seat{
+			Index:          i,
+			CommandChannel: make(chan models.ControlState, 100),
+			HudChannel:     make(chan models.Hud, 100),
+		})
+	}
+
+	var car vehicletype.Vehicle
+	switch cfg.CommandCfg.CarType {
+	case "crawler":
+	default:
+		car = crawler.NewCrawler(command, seats)
+	}
+
 	return &App{
-		Cfg:            cfg,
+		cfg:            cfg,
 		client:         client,
 		ctx:            ctx,
 		ctxCancel:      cancel,
-		commandChannel: commandChannel,
-		hudChannel:     hudChannel,
 		speakerChannel: speakerChannel,
-		car:            crawler.NewCrawler(commandChannel, hudChannel, command),
+		car:            car,
 		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
+		cams:           make([]*cam.Cam, 0, len(cfg.CamCfgs)),
+		userConns:      make([]*Connection, 0, cfg.ServerCfg.SeatCount),
 	}
 }
 
@@ -95,11 +112,19 @@ func (a *App) Start() error {
 	group, groupCtx := errgroup.WithContext(a.ctx)
 	log.Println("starting...")
 
-	cam, err := cam.NewCam(a.Cfg.CamCfg)
-	if err != nil {
-		return fmt.Errorf("error creating carcam: %w\n", err)
+	for i, camCfg := range a.cfg.CamCfgs {
+		if camCfg.Enabled { //start enabled cameras
+			cam, err := cam.NewCam(camCfg)
+			if err != nil {
+				return fmt.Errorf("error creating carcam %d: %w\n", i, err)
+			}
+			a.cams = append(a.cams, cam)
+
+			for i := range a.seats { //add all camera video tracks to each seat
+				a.seats[i].VideoTracks = append(a.seats[i].VideoTracks, cam.VideoTrack)
+			}
+		}
 	}
-	a.cam = cam
 
 	defer func() {
 		log.Println("stopping...")
@@ -137,10 +162,12 @@ func (a *App) Start() error {
 		}
 	})
 
-	//Start Camera
-	group.Go(func() error {
-		return a.cam.Start(groupCtx)
-	})
+	//Start Cameras
+	for _, cam := range a.cams {
+		group.Go(func() error {
+			return cam.Start(groupCtx)
+		})
+	}
 
 	//Start car
 	group.Go(func() error {
@@ -150,8 +177,9 @@ func (a *App) Start() error {
 	//Send connect and send healthchecks
 	group.Go(func() error {
 		encodedMsg, _ := encode(models.ConnectReq{
-			Key:      a.Cfg.Key,
-			Password: a.Cfg.Password,
+			Key:       a.cfg.ServerCfg.Key,
+			Password:  a.cfg.ServerCfg.Password,
+			SeatCount: a.cfg.ServerCfg.SeatCount,
 		})
 		a.client.Emit("car_connect", encodedMsg)
 
@@ -168,7 +196,7 @@ func (a *App) Start() error {
 			}
 		}
 	})
-	err = a.speaker.Play(groupCtx, "startup")
+	err := a.speaker.Play(groupCtx, "startup")
 	if err != nil {
 		log.Printf("failed playing startup sound: %s\n", err.Error())
 	}

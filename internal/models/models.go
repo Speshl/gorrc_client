@@ -8,8 +8,9 @@ import (
 const ClientAxesCount = 10
 
 type ConnectReq struct {
-	Key      string `json:"key"`
-	Password string `json:"password"`
+	Key       string `json:"key"`
+	Password  string `json:"password"`
+	SeatCount int    `json:"seat_count"`
 }
 
 type ConnectResp struct {
@@ -33,6 +34,12 @@ type Track struct {
 type Offer struct {
 	Offer        webrtc.SessionDescription `json:"offer"`
 	CarShortName string                    `json:"car_name"`
+	SeatNumber   int                       `json:"seat_number"`
+}
+
+type Answer struct {
+	Answer     *webrtc.SessionDescription `json:"answer"`
+	SeatNumber int                        `json:"seat_number"`
 }
 
 type ControlState struct {
@@ -49,4 +56,12 @@ type Hud struct {
 type Ping struct {
 	Source    string `json:"source"`
 	TimeStamp int64  `json:"time_stamp"`
+}
+
+type Seat struct {
+	Index          int
+	CommandChannel chan ControlState
+	HudChannel     chan Hud
+	VideoTracks    []*webrtc.TrackLocalStaticSample
+	AudioTracks    []*webrtc.TrackLocalStaticSample
 }

@@ -14,11 +14,6 @@ const (
 	MaxSupportedServos = 16
 )
 
-type CommandIFace interface {
-	Set(string, float64, float64, float64) error
-	Init() error
-}
-
 type TestCommand struct {
 	cfg    config.CommandConfig
 	servos map[string]TestServo
