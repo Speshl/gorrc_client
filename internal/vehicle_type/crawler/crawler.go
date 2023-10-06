@@ -47,7 +47,7 @@ func NewCrawlerSeats(seats []models.Seat) []vehicletype.VehicleSeatIFace[Crawler
 			crawlerSeats = append(crawlerSeats, NewDriverSeat(&seats[i]))
 		case 1:
 			log.Println("setting up passenger seat")
-			//crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i]))
+			crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i]))
 		}
 	}
 	return crawlerSeats
@@ -75,8 +75,9 @@ func (c *Crawler) Start(ctx context.Context) error {
 	errGroup, errGroupCtx := errgroup.WithContext(ctx)
 
 	for i := range c.seats {
+		seatNum := i
 		errGroup.Go(func() error {
-			return c.seats[i].Start(errGroupCtx)
+			return c.seats[seatNum].Start(errGroupCtx)
 		})
 	}
 
