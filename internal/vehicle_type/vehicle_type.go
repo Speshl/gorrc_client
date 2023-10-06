@@ -2,7 +2,7 @@ package vehicletype
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"math"
 
 	"github.com/Speshl/gorrc_client/internal/models"
@@ -62,20 +62,20 @@ func BuildButtonMasks() []uint32 {
 	return buttonMasks
 }
 
-func NewPress(oldState, newState models.ControlState, buttonIndex int, f func()) {
+func NewPress(oldState, newState models.ControlState, buttonIndex int, f func()) (bool, error) {
 	if len(newState.Buttons) != len(oldState.Buttons) {
-		log.Println("length of buttons states mismatched")
-		return
+		return false, fmt.Errorf("length of buttons states mismatched")
 	}
 
 	if buttonIndex < 0 || buttonIndex > len(oldState.Buttons) {
-		log.Println("buttonIndex out of bounds - buttonIndex: %d maxIndex: %d\n", buttonIndex, len(oldState.Buttons))
-		return
+		return false, fmt.Errorf("buttonIndex out of bounds - buttonIndex: %d maxIndex: %d", buttonIndex, len(oldState.Buttons))
 	}
 
 	if newState.Buttons[buttonIndex] && !oldState.Buttons[buttonIndex] {
 		f()
+		return true, nil
 	}
+	return false, nil
 }
 
 func GetValueWithMidDeadZone(value, midValue, deadZone float64) float64 {
