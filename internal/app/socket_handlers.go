@@ -29,11 +29,6 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	if a.speaker == nil {
-		log.Printf("speaker is not configured yet")
-		return
-	}
-
 	newConnection, err := NewConnection(context.Background(), socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
 	if err != nil {
 		log.Printf("error: failed creating connection on offer for seat %d: %s\n", offer.SeatNumber, err.Error())
@@ -41,11 +36,15 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	}
 	a.userConns[offer.SeatNumber] = newConnection
 
+	log.Println("registering handlers")
+
 	err = a.userConns[offer.SeatNumber].RegisterHandlers(a.seats[offer.SeatNumber].AudioTracks, a.seats[offer.SeatNumber].VideoTracks)
 	if err != nil {
 		log.Printf("error: failed registering handelers for connection for seat %d: %s\n", offer.SeatNumber, err.Error())
 		return
 	}
+
+	log.Println("setting remote description")
 
 	// Set the received offer as the remote description
 	err = a.userConns[offer.SeatNumber].PeerConnection.SetRemoteDescription(offer.Offer)
@@ -53,6 +52,8 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		log.Printf("error: failed to set remote description: %s\n", err)
 		return
 	}
+
+	log.Println("creating answer")
 
 	// Create answer
 	answer, err := a.userConns[offer.SeatNumber].PeerConnection.CreateAnswer(nil)
@@ -63,6 +64,8 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 
 	// Create channel that is blocked until ICE Gathering is complete
 	gatherComplete := webrtc.GatheringCompletePromise(a.userConns[offer.SeatNumber].PeerConnection)
+
+	log.Println("setting local description")
 
 	// Sets the LocalDescription, and starts our UDP listeners
 	err = a.userConns[offer.SeatNumber].PeerConnection.SetLocalDescription(answer)
