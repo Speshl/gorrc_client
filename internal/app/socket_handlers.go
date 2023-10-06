@@ -13,6 +13,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	log.Println("offer recieved")
 	if len(msgs) != 1 {
 		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
+		return
 	}
 	msg := msgs[0]
 
