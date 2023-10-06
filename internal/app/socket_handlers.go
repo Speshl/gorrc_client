@@ -10,11 +10,13 @@ import (
 )
 
 func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
-	log.Println("Offer recieved")
+	log.Println("offer recieved")
 	if len(msgs) != 1 {
 		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
 	}
 	msg := msgs[0]
+
+	log.Println("start decoding offer")
 
 	offer := models.Offer{}
 	err := decode(msg, &offer)
@@ -23,10 +25,14 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
+	log.Println("offer decoded")
+
 	if offer.SeatNumber < 0 || offer.SeatNumber >= a.cfg.ServerCfg.SeatCount {
 		log.Printf("error: offer was for unsupported seat number: %d\n", offer.SeatNumber)
 		return
 	}
+
+	log.Println("create new connection")
 
 	newConnection, err := NewConnection(context.Background(), socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
 	if err != nil {
