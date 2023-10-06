@@ -66,6 +66,6 @@ func (c *Connection) onPingHandler(data []byte) {
 	}
 	if ping.Source == PingSourceName {
 		roundTripTime := time.Now().UnixMilli() - ping.TimeStamp
-		log.Printf("ping: %d ms\n", roundTripTime)
+		log.Printf("user ping: %d ms\n", roundTripTime)
 	}
 }

@@ -45,7 +45,7 @@ func (c *CrawlerSeat) Start(ctx context.Context) error {
 		case <-saftyTicker.C:
 			c.lock.Lock()
 			if c.active && time.Since(c.lastCommandTime) > 200*time.Millisecond {
-				log.Printf("setting %s seat inactive due to time since last command\n", c.seatType)
+				//log.Printf("setting %s seat inactive due to time since last command\n", c.seatType)
 				c.active = false
 			}
 			c.lock.Unlock()
@@ -73,6 +73,12 @@ func (c *CrawlerSeat) ApplyCommand(state CrawlerState) CrawlerState {
 		c.nextCommand.Buttons = vehicletype.ParseButtons(c.nextCommand.BitButton, c.buttonMasks)
 		if c.lastCommand.TimeStamp == 0 {
 			log.Println("skipping first command")
+			c.lastCommand = c.nextCommand
+			return state
+		}
+
+		if c.nextCommand.TimeStamp-c.lastCommand.TimeStamp > 200 {
+			log.Println("skipping command due to latency")
 			c.lastCommand = c.nextCommand
 			return state
 		}
