@@ -16,8 +16,6 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	}
 	msg := msgs[0]
 
-	log.Println("start decoding offer")
-
 	offer := models.Offer{}
 	err := decode(msg, &offer)
 	if err != nil {
@@ -25,14 +23,15 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	log.Println("offer decoded")
-
-	if offer.SeatNumber < 0 || offer.SeatNumber >= a.cfg.ServerCfg.SeatCount {
+	if offer.SeatNumber < 0 || offer.SeatNumber >= a.cfg.ServerCfg.SeatCount || offer.SeatNumber >= len(a.seats) {
 		log.Printf("error: offer was for unsupported seat number: %d\n", offer.SeatNumber)
 		return
 	}
 
-	log.Println("create new connection")
+	if a.speaker == nil {
+		log.Printf("speaker is not configured yet")
+		return
+	}
 
 	newConnection, err := NewConnection(context.Background(), socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
 	if err != nil {
