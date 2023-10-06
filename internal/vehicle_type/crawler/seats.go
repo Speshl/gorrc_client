@@ -58,7 +58,11 @@ func (c *CrawlerSeat) Start(ctx context.Context) error {
 			}
 
 			c.lock.Lock()
-			if command.TimeStamp > c.nextCommand.TimeStamp {
+			if c.nextCommand.TimeStamp == 0 {
+				c.nextCommand = command
+			}
+
+			if command.TimeStamp >= c.nextCommand.TimeStamp {
 				c.nextCommand = command
 				c.lastCommandTime = time.Now()
 				c.active = true
