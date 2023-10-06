@@ -89,7 +89,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		log.Printf("error: failed encoding answer: %s", err.Error())
 		return
 	}
-	log.Println("accepting/answering offer for seat %d\n", offer.SeatNumber)
+	log.Printf("accepting/answering offer for seat %d\n", offer.SeatNumber)
 	a.client.Emit("answer", encodedAnswer)
 }
 

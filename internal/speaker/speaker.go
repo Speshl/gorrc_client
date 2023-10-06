@@ -26,7 +26,6 @@ type Speaker struct {
 
 func NewSpeaker(cfg config.SpeakerConfig, soundChannel chan string) *Speaker {
 	return &Speaker{
-		//ClientAudioChannel: make(chan []byte, 10),
 		soundChannel: soundChannel,
 		cfg:          cfg,
 	}
