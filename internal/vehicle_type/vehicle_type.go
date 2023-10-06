@@ -69,7 +69,7 @@ func NewPress(oldState, newState models.ControlState, buttonIndex int, f func())
 	}
 
 	if buttonIndex < 0 || buttonIndex > len(oldState.Buttons) {
-		log.Println("buttonIndex out of bounds")
+		log.Println("buttonIndex out of bounds - buttonIndex: %d maxIndex: %d\n", buttonIndex, len(oldState.Buttons))
 		return
 	}
 

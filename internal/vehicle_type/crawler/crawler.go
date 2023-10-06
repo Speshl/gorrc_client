@@ -17,8 +17,6 @@ func NewCrawler(commandDriver vehicletype.CommandDriverIFace, seats []models.Sea
 	crawlerState := NewCrawlerState()
 	return &Crawler{
 		commandDriver: commandDriver,
-		buttonMasks:   vehicletype.BuildButtonMasks(),
-		buttons:       make([]bool, 0, 32),
 		state:         crawlerState,
 		seats:         NewCrawlerSeats(seats),
 	}

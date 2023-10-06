@@ -16,6 +16,7 @@ func NewDriverSeat(seat *models.Seat) *CrawlerSeat {
 		seatCommandParser: driverParser,
 		seatType:          "driver",
 		active:            false,
+		buttonMasks:       vehicletype.BuildButtonMasks(),
 	}
 }
 
@@ -69,7 +70,9 @@ func (c *CrawlerSeat) ApplyCommand(state CrawlerState) CrawlerState {
 	defer c.lock.Unlock()
 
 	if c.active {
+		c.nextCommand.Buttons = vehicletype.ParseButtons(c.nextCommand.BitButton, c.buttonMasks)
 		if c.lastCommand.TimeStamp == 0 {
+			log.Println("skipping first command")
 			c.lastCommand = c.nextCommand
 			return state
 		}

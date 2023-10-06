@@ -107,8 +107,6 @@ type Crawler struct {
 	state         CrawlerState
 	commandDriver vehicletype.CommandDriverIFace
 
-	buttonMasks []uint32
-	buttons     []bool
 	//Transmission
 	// Ratios    map[int]Ratio
 	// TransType string //use goenum
@@ -140,6 +138,8 @@ type CrawlerSeat struct {
 	seatCommandParser SeatCommandParser
 	seatType          string
 	active            bool
+
+	buttonMasks []uint32
 
 	nextCommand     models.ControlState
 	lastCommand     models.ControlState
