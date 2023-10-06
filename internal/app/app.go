@@ -175,6 +175,11 @@ func (a *App) Start() error {
 	//Start car
 	group.Go(func() error {
 		log.Printf("Starting car")
+		err := a.car.Init()
+		if err != nil {
+			return err
+		}
+
 		return a.car.Start(groupCtx)
 	})
 

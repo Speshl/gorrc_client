@@ -64,7 +64,8 @@ func (c *Crawler) Init() error {
 		}
 	}
 
-	return nil
+	//Center up servos
+	return c.applyState(c.state)
 }
 
 func (c *Crawler) Start(ctx context.Context) error {
@@ -124,7 +125,7 @@ func (c *Crawler) applyState(state CrawlerState) error {
 	c.state = state
 
 	commands := c.buildCommands(c.state)
-	log.Println("sending commands to driver: %+v\n", commands)
+	log.Printf("sending commands to driver: %+v\n", commands)
 	err := c.commandDriver.SetMany(commands)
 	if err != nil {
 		return fmt.Errorf("failed setting crawler commands: %w", err)
@@ -138,44 +139,44 @@ func (c *Crawler) buildCommands(state CrawlerState) []vehicletype.DriverCommand 
 		{
 			Name:  "esc",
 			Value: state.Esc,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 		{
 			Name:  "steer",
 			Value: state.Steer,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 		{
 			Name:  "pan",
 			Value: state.Pan,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 		{
 			Name:  "tilt",
 			Value: state.Tilt,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 
 		{
 			Name:  "trigger",
 			Value: state.Trigger,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 		{
 			Name:  "turret_pan",
 			Value: state.TurretPan,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 		{
 			Name:  "turrent_tilt",
 			Value: state.TurretTilt,
-			Min:   MaxOutput,
+			Min:   MinOutput,
 			Max:   MaxOutput,
 		},
 	}
