@@ -41,12 +41,13 @@ func NewCrawlerState() CrawlerState {
 func NewCrawlerSeats(seats []models.Seat) []vehicletype.VehicleSeatIFace[CrawlerState] {
 	crawlerSeats := make([]vehicletype.VehicleSeatIFace[CrawlerState], 0, len(seats))
 	for i := range seats {
-		log.Printf("setting up seat %d\n", i)
 		switch i {
 		case 0:
+			log.Println("setting up driver seat")
 			crawlerSeats = append(crawlerSeats, NewDriverSeat(&seats[i]))
 		case 1:
-			crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i]))
+			log.Println("setting up passenger seat")
+			//crawlerSeats = append(crawlerSeats, NewPassengerSeat(&seats[i]))
 		}
 	}
 	return crawlerSeats

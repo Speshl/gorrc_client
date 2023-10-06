@@ -112,10 +112,6 @@ func driverParser(oldCommand, newCommand models.ControlState, crawlerState Crawl
 	// vehicletype.NewPress(oldCommand, newCommand, VolumeUp, newState.volumeUp)
 	// vehicletype.NewPress(oldCommand, newCommand, VolumeDown, newState.volumeDown)
 
-	if newCommand.Axes[0] != 0.0 {
-		log.Printf("debug: steering: %.2f\n", newCommand.Axes[0])
-	}
-
 	newState.mapSteer(newCommand.Axes[0])
 	newState.mapEsc(newCommand.Axes[1], newCommand.Axes[2])
 	newState.mapPan(newCommand.Axes[3])
