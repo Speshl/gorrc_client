@@ -125,7 +125,7 @@ func (c *Crawler) applyState(state CrawlerState) error {
 	c.state = state
 
 	commands := c.buildCommands(c.state)
-	log.Printf("sending commands to driver: %+v\n", commands)
+	log.Printf("debug: steer: %+v\n", commands[1].Value)
 	err := c.commandDriver.SetMany(commands)
 	if err != nil {
 		return fmt.Errorf("failed setting crawler commands: %w", err)
