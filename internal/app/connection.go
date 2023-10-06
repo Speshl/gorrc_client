@@ -111,7 +111,6 @@ func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSampl
 						TimeStamp: time.Now().UnixMilli(),
 						Source:    PingSourceName,
 					})
-					sent = true
 					err = c.PingOutput.Send(data)
 					if err != nil {
 						log.Printf("error: failed sending ping: error - %s\n", err.Error())
