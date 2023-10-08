@@ -189,7 +189,11 @@ func (a *App) Start() error {
 	group.Go(func() error {
 		log.Printf("starting mic")
 		a.mic.Start()
-		return nil
+		select {
+		case <-groupCtx.Done():
+			log.Printf("stopping mic")
+			return nil
+		}
 	})
 
 	//Start car
