@@ -225,7 +225,7 @@ func (a *App) Start() error {
 			}
 		}
 	})
-	err = a.speaker.Play(groupCtx, "startup")
+	err := a.speaker.Play(groupCtx, "startup")
 	if err != nil {
 		log.Printf("failed playing startup sound: %s\n", err.Error())
 	}
