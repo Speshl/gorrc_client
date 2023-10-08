@@ -12,12 +12,6 @@ import (
 
 const saftyTime = 200 * time.Millisecond
 
-// type VehicleSeatIFace[T any] interface {
-// 	Init() error
-// 	Start(context.Context) error
-// 	ApplyCommand(T) T
-// }
-
 type VehicleStateIFace[T any] interface {
 }
 
@@ -27,6 +21,7 @@ type VehicleSeat[T any] struct {
 
 	seatCenterer      func(VehicleStateIFace[T]) VehicleStateIFace[T]
 	seatCommandParser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T]
+	hudUpdater        func(VehicleStateIFace[T]) models.Hud
 
 	seatType string
 	active   bool
@@ -38,11 +33,15 @@ type VehicleSeat[T any] struct {
 	lastCommandTime time.Time
 }
 
-func NewVehicleSeat[T any](seat *models.Seat, parser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T], centerer func(VehicleStateIFace[T]) VehicleStateIFace[T]) *VehicleSeat[T] {
+func NewVehicleSeat[T any](seat *models.Seat,
+	parser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T],
+	centerer func(VehicleStateIFace[T]) VehicleStateIFace[T],
+	hudUpdater func(VehicleStateIFace[T]) models.Hud) *VehicleSeat[T] {
 	return &VehicleSeat[T]{
 		seat:              seat,
 		seatCommandParser: parser,
 		seatCenterer:      centerer,
+		hudUpdater:        hudUpdater,
 		seatType:          "driver",
 		active:            false,
 		buttonMasks:       BuildButtonMasks(),
@@ -113,4 +112,66 @@ func (c *VehicleSeat[T]) ApplyCommand(state VehicleStateIFace[T]) VehicleStateIF
 	} else {
 		return c.seatCenterer(state)
 	}
+}
+
+func (c *VehicleSeat[T]) UpdateHud(state VehicleStateIFace[T]) {
+	if !c.active {
+		return
+	}
+
+	c.lock.Lock()
+	defer c.lock.Unlock()
+	c.seat.HudChannel <- c.hudUpdater(state)
+}
+
+func NewPress(oldState, newState models.ControlState, buttonIndex int, f func()) (bool, error) {
+	if len(newState.Buttons) != len(oldState.Buttons) {
+		return false, fmt.Errorf("length of buttons states mismatched")
+	}
+
+	if buttonIndex < 0 || buttonIndex > len(oldState.Buttons) {
+		return false, fmt.Errorf("buttonIndex out of bounds - buttonIndex: %d maxIndex: %d", buttonIndex, len(oldState.Buttons))
+	}
+
+	if newState.Buttons[buttonIndex] && !oldState.Buttons[buttonIndex] {
+		f()
+		return true, nil
+	}
+	return false, nil
+}
+
+func GetValueWithMidDeadZone(value, midValue, deadZone float64) float64 {
+	if value > midValue && midValue+deadZone > value {
+		return midValue
+	} else if value < midValue && midValue-deadZone < value {
+		return midValue
+	}
+	return value
+}
+
+func GetValueWithLowDeadZone(value, lowValue, deadZone float64) float64 {
+	if value > lowValue && lowValue+deadZone > value {
+		return lowValue
+	}
+	return value
+}
+
+func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {
+	mappedValue := (maxReturn-minReturn)*(value-min)/(max-min) + minReturn
+
+	if mappedValue > maxReturn {
+		return maxReturn
+	} else if mappedValue < minReturn {
+		return minReturn
+	} else {
+		return mappedValue
+	}
+}
+
+func ParseButtons(bitButton uint32, masks []uint32) []bool {
+	returnvalue := make([]bool, 32)
+	for i := range masks {
+		returnvalue[i] = ((bitButton & masks[i]) != 0) //Check if bitbutton and mask both have bits in same place
+	}
+	return returnvalue
 }
