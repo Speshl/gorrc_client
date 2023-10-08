@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/Speshl/gorrc_client/internal/config"
-	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"github.com/googolgl/go-i2c"
 	"github.com/googolgl/go-pca9685"
 )
@@ -77,7 +77,7 @@ func (c *CommandDriver) CenterAll() {
 	}
 }
 
-func (c *CommandDriver) SetMany(commands []vehicletype.DriverCommand) error {
+func (c *CommandDriver) SetMany(commands []vehicle.DriverCommand) error {
 	for i := range commands {
 		err := c.Set(commands[i])
 		if err != nil {
@@ -87,7 +87,7 @@ func (c *CommandDriver) SetMany(commands []vehicletype.DriverCommand) error {
 	return nil
 }
 
-func (c *CommandDriver) Set(command vehicletype.DriverCommand) error {
+func (c *CommandDriver) Set(command vehicle.DriverCommand) error {
 	val, ok := c.servos[command.Name]
 	if ok {
 		mappedValue := mapToRange(command.Value+val.offset, command.Min, command.Max, MinValue, MaxValue)

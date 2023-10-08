@@ -4,8 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Speshl/gorrc_client/internal/models"
-	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
 
 const (
@@ -103,9 +102,9 @@ type Ratio struct {
 
 type Crawler struct {
 	lock          sync.RWMutex
-	seats         []vehicletype.VehicleSeatIFace[CrawlerState]
+	seats         []*vehicle.VehicleSeat[CrawlerState]
 	state         CrawlerState
-	commandDriver vehicletype.CommandDriverIFace
+	commandDriver vehicle.CommandDriverIFace
 
 	//Transmission
 	// Ratios    map[int]Ratio
@@ -128,20 +127,4 @@ type CrawlerState struct {
 	TurretTilt float64
 
 	Ratios map[int]Ratio
-}
-
-type SeatCommandParser func(models.ControlState, models.ControlState, CrawlerState) CrawlerState
-
-type CrawlerSeat struct {
-	lock              sync.RWMutex
-	seat              *models.Seat
-	seatCommandParser SeatCommandParser
-	seatType          string
-	active            bool
-
-	buttonMasks []uint32
-
-	nextCommand     models.ControlState
-	lastCommand     models.ControlState
-	lastCommandTime time.Time
 }

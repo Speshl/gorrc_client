@@ -17,8 +17,8 @@ import (
 	"github.com/Speshl/gorrc_client/internal/mic"
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/speaker"
-	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
-	"github.com/Speshl/gorrc_client/internal/vehicle_type/crawler"
+	"github.com/Speshl/gorrc_client/internal/vehicle"
+	"github.com/Speshl/gorrc_client/internal/vehicle/crawler"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/pion/webrtc/v3"
 	"golang.org/x/sync/errgroup"
@@ -32,7 +32,7 @@ type App struct {
 	ctxCancel context.CancelFunc
 	cfg       config.Config
 
-	car vehicletype.Vehicle
+	car vehicle.Vehicle
 
 	carInfo   models.Car
 	trackInfo models.Track
@@ -43,7 +43,7 @@ type App struct {
 	speaker        *speaker.Speaker
 	mic            *mic.Mic
 	cams           []*cam.Cam
-	command        vehicletype.CommandDriverIFace
+	command        vehicle.CommandDriverIFace
 
 	seats     []models.Seat //number of available connections to this vehicle
 	userConns []*Connection
@@ -71,7 +71,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		})
 	}
 
-	var car vehicletype.Vehicle
+	var car vehicle.Vehicle
 	switch cfg.CommandCfg.CarType {
 	case "crawler":
 		fallthrough

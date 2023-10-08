@@ -1,4 +1,4 @@
-package vehicletype
+package vehicle
 
 import (
 	"context"
@@ -25,12 +25,6 @@ type Vehicle interface {
 	Init() error
 	Start(context.Context) error
 	//String() string
-}
-
-type VehicleSeatIFace[T any] interface {
-	Init() error
-	Start(context.Context) error
-	ApplyCommand(T) T
 }
 
 func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {

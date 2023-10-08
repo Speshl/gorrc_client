@@ -3,7 +3,7 @@ package crawler
 import (
 	"log"
 
-	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
 
 func (c *CrawlerState) upShift() {
@@ -74,13 +74,13 @@ func (c *CrawlerState) turretCenter() {
 // }
 
 func (c *CrawlerState) mapSteer(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
-	c.Steer = vehicletype.MapToRange(value+c.SteerTrim, MinInput, MaxInput, MinOutput, MaxOutput)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
+	c.Steer = vehicle.MapToRange(value+c.SteerTrim, MinInput, MaxInput, MinOutput, MaxOutput)
 }
 
 func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
-	throttle = vehicletype.GetValueWithLowDeadZone(throttle, 0, DeadZone)
-	brake = vehicletype.GetValueWithLowDeadZone(brake, 0, DeadZone)
+	throttle = vehicle.GetValueWithLowDeadZone(throttle, 0, DeadZone)
+	brake = vehicle.GetValueWithLowDeadZone(brake, 0, DeadZone)
 
 	if c.Gear == 0 {
 		c.Esc = 0.0
@@ -91,7 +91,7 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 			if throttle > brake {
 				c.Esc = 0.0
 			} else if throttle < brake {
-				c.Esc = vehicletype.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
+				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
 				c.Esc = 0.0
 			}
@@ -102,9 +102,9 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 		ratio, ok := c.Ratios[c.Gear]
 		if ok {
 			if throttle > brake {
-				c.Esc = vehicletype.MapToRange(throttle, MinInput, MaxInput, 0.0, ratio.Max)
+				c.Esc = vehicle.MapToRange(throttle, MinInput, MaxInput, 0.0, ratio.Max)
 			} else if throttle < brake {
-				c.Esc = vehicletype.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
+				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
 				c.Esc = 0.0
 			}
@@ -113,9 +113,9 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 }
 
 func (c *CrawlerState) mapPan(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
 
-	posAdjust := vehicletype.MapToRange(value, MinInput, MaxInput, -1*MaxPanPerCycle, MaxPanPerCycle)
+	posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*MaxPanPerCycle, MaxPanPerCycle)
 	if c.Pan+posAdjust > MaxOutput {
 		c.Pan = MaxOutput
 	} else if c.Pan+posAdjust < MinOutput {
@@ -126,9 +126,9 @@ func (c *CrawlerState) mapPan(value float64) {
 }
 
 func (c *CrawlerState) mapTilt(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
 
-	posAdjust := vehicletype.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
+	posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
 	if c.Tilt+posAdjust > MaxOutput {
 		c.Tilt = MaxOutput
 	} else if c.Tilt+posAdjust < MinOutput {
@@ -139,14 +139,14 @@ func (c *CrawlerState) mapTilt(value float64) {
 }
 
 func (c *CrawlerState) mapTrigger(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
-	c.Steer = vehicletype.MapToRange(value, MinInput, MaxInput, MinOutput, MaxOutput)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
+	c.Steer = vehicle.MapToRange(value, MinInput, MaxInput, MinOutput, MaxOutput)
 }
 
 func (c *CrawlerState) mapTurretTilt(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
 
-	posAdjust := vehicletype.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
+	posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
 	if c.TurretTilt+posAdjust > MaxOutput {
 		c.TurretTilt = MaxOutput
 	} else if c.TurretTilt+posAdjust < MinOutput {
@@ -157,9 +157,9 @@ func (c *CrawlerState) mapTurretTilt(value float64) {
 }
 
 func (c *CrawlerState) mapTurretPan(value float64) {
-	value = vehicletype.GetValueWithMidDeadZone(value, 0, DeadZone)
+	value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
 
-	posAdjust := vehicletype.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
+	posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*MaxTiltPerCycle, MaxTiltPerCycle)
 	if c.TurretPan+posAdjust > MaxOutput {
 		c.TurretPan = MaxOutput
 	} else if c.TurretPan+posAdjust < MinOutput {

@@ -7,11 +7,11 @@ import (
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/models"
-	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
+	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCrawler(commandDriver vehicletype.CommandDriverIFace, seats []models.Seat) *Crawler {
+func NewCrawler(commandDriver vehicle.CommandDriverIFace, seats []models.Seat) *Crawler {
 	log.Printf("setting up crawler with %d seats\n", len(seats))
 
 	crawlerState := NewCrawlerState()
@@ -38,8 +38,8 @@ func NewCrawlerState() CrawlerState {
 	}
 }
 
-func NewCrawlerSeats(seats []models.Seat) []vehicletype.VehicleSeatIFace[CrawlerState] {
-	crawlerSeats := make([]vehicletype.VehicleSeatIFace[CrawlerState], 0, len(seats))
+func NewCrawlerSeats(seats []models.Seat) []*vehicle.VehicleSeat[CrawlerState] {
+	crawlerSeats := make([]*vehicle.VehicleSeat[CrawlerState], 0, len(seats))
 	for i := range seats {
 		switch i {
 		case 0:
@@ -91,7 +91,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 			case <-commandTicker.C:
 				statesWithNewCommand := make([]CrawlerState, 0, len(c.seats))
 				for i := range c.seats {
-					newState := c.seats[i].ApplyCommand(c.state)
+					newState := c.seats[i].ApplyCommand(c.state).(CrawlerState)
 					statesWithNewCommand = append(statesWithNewCommand, newState)
 				}
 
@@ -136,8 +136,8 @@ func (c *Crawler) applyState(state CrawlerState) error {
 	return nil
 }
 
-func (c *Crawler) buildCommands(state CrawlerState) []vehicletype.DriverCommand {
-	return []vehicletype.DriverCommand{
+func (c *Crawler) buildCommands(state CrawlerState) []vehicle.DriverCommand {
+	return []vehicle.DriverCommand{
 		{
 			Name:  "esc",
 			Value: state.Esc,
