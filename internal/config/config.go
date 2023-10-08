@@ -36,7 +36,11 @@ const (
 
 	// Default Speaker Options
 	DefaultSpeakerDevice = "0"
-	DefaultSpeakerVolume = "5.0"
+	DefaultSpeakerVolume = "1.0"
+
+	// Default Speaker Options
+	DefaultMicDevice = "1"
+	DefaultMicVolume = "1.0"
 
 	// Default Command Options
 	DefaultAddress   = 0x40
@@ -48,6 +52,7 @@ type Config struct {
 	CommandCfg CommandConfig
 	CamCfgs    []CamConfig
 	SpeakerCfg SpeakerConfig
+	MicCfg     MicConfig
 }
 
 type ServerConfig struct {
@@ -96,12 +101,18 @@ type SpeakerConfig struct {
 	Volume string
 }
 
+type MicConfig struct {
+	Device string
+	Volume string
+}
+
 func GetConfig() Config {
 	cfg := Config{
 		ServerCfg:  GetServerConfig(),
 		CommandCfg: GetCommandConfig(),
 		CamCfgs:    GetCamConfig(),
 		SpeakerCfg: GetSpeakerConfig(),
+		MicCfg:     GetMicConfig(),
 	}
 
 	log.Printf("app Config: \n%+v\n", cfg)
@@ -170,6 +181,13 @@ func GetSpeakerConfig() SpeakerConfig {
 	return SpeakerConfig{
 		Device: GetStringEnv("SPEAKERDEVICE", DefaultSpeakerDevice),
 		Volume: GetStringEnv("SPEAKERVOLUME", DefaultSpeakerVolume),
+	}
+}
+
+func GetMicConfig() MicConfig {
+	return MicConfig{
+		Device: GetStringEnv("MICDEVICE", DefaultMicDevice),
+		Volume: GetStringEnv("MICVOLUME", DefaultMicVolume),
 	}
 }
 

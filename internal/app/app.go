@@ -14,6 +14,7 @@ import (
 	pca9685 "github.com/Speshl/gorrc_client/internal/command/pca9685"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/gst"
+	"github.com/Speshl/gorrc_client/internal/mic"
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/speaker"
 	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
@@ -39,9 +40,9 @@ type App struct {
 
 	speakerChannel chan string
 	speaker        *speaker.Speaker
-	// mic     *carmic.CarMic
-	cams    []*cam.Cam
-	command vehicletype.CommandDriverIFace
+	mic            *mic.Mic
+	cams           []*cam.Cam
+	command        vehicletype.CommandDriverIFace
 
 	seats     []models.Seat //number of available connections to this vehicle
 	userConns []*Connection
@@ -104,7 +105,7 @@ func (a *App) RegisterHandlers() error {
 	log.Println("attempting to connect to server...")
 	err := a.client.Connect() //Client must have atleast 1 event handler to work
 	if err != nil {
-		return fmt.Errorf("error connecting to server - %w", err)
+		return fmt.Errorf("error: failed connecting to server - %w", err)
 	}
 	log.Println("connected to server")
 	return nil
@@ -118,7 +119,7 @@ func (a *App) Start() error {
 		if camCfg.Enabled { //start enabled cameras
 			cam, err := cam.NewCam(camCfg)
 			if err != nil {
-				return fmt.Errorf("error creating carcam %d: %w\n", i, err)
+				return fmt.Errorf("error: failed creating cam %d: %w\n", i, err)
 			}
 			a.cams = append(a.cams, cam)
 
@@ -127,6 +128,12 @@ func (a *App) Start() error {
 			}
 		}
 	}
+
+	mic, err := mic.NewMic(a.cfg.MicCfg)
+	if err != nil {
+		return fmt.Errorf("error: failed creating mic: %w\n", err)
+	}
+	a.mic = mic
 
 	defer func() {
 		log.Println("stopping...")
@@ -205,7 +212,7 @@ func (a *App) Start() error {
 			}
 		}
 	})
-	err := a.speaker.Play(groupCtx, "startup")
+	err = a.speaker.Play(groupCtx, "startup")
 	if err != nil {
 		log.Printf("failed playing startup sound: %s\n", err.Error())
 	}

@@ -28,13 +28,13 @@ func NewCam(cfg config.CamConfig) (*Cam, error) {
 		return nil, fmt.Errorf("error creating first video track: %w", err)
 	}
 
-	carCam := Cam{
+	cam := Cam{
 		VideoTrack:   videoTrack,
 		videoChannel: make(chan []byte, 5),
 		cfg:          cfg,
 	}
-	carCam.cfg.Level = DefaultLevel
-	return &carCam, nil
+	cam.cfg.Level = DefaultLevel
+	return &cam, nil
 }
 
 func (c *Cam) Start(ctx context.Context) error {
