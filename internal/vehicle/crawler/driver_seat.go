@@ -1,8 +1,6 @@
 package crawler
 
 import (
-	"log"
-
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
@@ -35,13 +33,11 @@ func driverParser[T CrawlerState](oldCommand, newCommand models.ControlState, cr
 }
 
 func driverCenter[T CrawlerState](state vehicle.VehicleStateIFace[T]) vehicle.VehicleStateIFace[T] {
-	log.Println("recenter driver")
 	newState := state.(CrawlerState)
 	newState.Gear = 0
 	newState.Esc = 0.0
 	newState.Steer = 0.0
 	newState.Pan = 0.0
 	newState.Tilt = 0.0
-
 	return newState
 }
