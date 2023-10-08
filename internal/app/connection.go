@@ -54,6 +54,7 @@ func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlStat
 		CtxCancel:      cancel,
 		CommandChannel: commandChan,
 		HudChannel:     hudChan,
+		Speaker:        speakers,
 	}
 	return conn, nil
 }

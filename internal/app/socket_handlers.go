@@ -78,7 +78,9 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	// Block until ICE Gathering is complete, disabling trickle ICE
 	// we do this because we only can exchange one signaling message
 	// in a production application you should exchange ICE Candidates via OnICECandidate
+	log.Println("waiting for ice gathering")
 	<-gatherComplete
+	log.Println("ice gathering complete")
 
 	answerReq := models.Answer{
 		Answer:     a.userConns[offer.SeatNumber].PeerConnection.LocalDescription(),
