@@ -132,14 +132,14 @@ func (a *App) Start() error {
 		}
 	}
 
-	// mic, err := mic.NewMic(a.cfg.MicCfg)
-	// if err != nil {
-	// 	return fmt.Errorf("error: failed creating mic: %w\n", err)
-	// }
-	// a.mic = mic
-	// for i := range a.seats { //add audio video tracks to each seat
-	// 	a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
-	// }
+	mic, err := mic.NewMic(a.cfg.MicCfg)
+	if err != nil {
+		return fmt.Errorf("error: failed creating mic: %w\n", err)
+	}
+	a.mic = mic
+	for i := range a.seats { //add audio video tracks to each seat
+		a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
+	}
 
 	defer func() {
 		log.Println("stopping...")
@@ -185,12 +185,12 @@ func (a *App) Start() error {
 		})
 	}
 
-	//Start Mic
-	// group.Go(func() error {
-	// 	log.Printf("starting mic")
-	// 	a.mic.Start()
-	// 	return nil
-	// })
+	// Start Mic
+	group.Go(func() error {
+		log.Printf("starting mic")
+		a.mic.Start()
+		return nil
+	})
 
 	//Start car
 	group.Go(func() error {
@@ -225,7 +225,7 @@ func (a *App) Start() error {
 			}
 		}
 	})
-	err := a.speaker.Play(groupCtx, "startup")
+	err = a.speaker.Play(groupCtx, "startup")
 	if err != nil {
 		log.Printf("failed playing startup sound: %s\n", err.Error())
 	}
