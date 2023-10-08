@@ -20,6 +20,7 @@ import (
 	vehicletype "github.com/Speshl/gorrc_client/internal/vehicle_type"
 	"github.com/Speshl/gorrc_client/internal/vehicle_type/crawler"
 	socketio "github.com/googollee/go-socket.io"
+	"github.com/pion/webrtc/v3"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -65,6 +66,8 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 			Index:          i,
 			CommandChannel: make(chan models.ControlState, 100),
 			HudChannel:     make(chan models.Hud, 100),
+			VideoTracks:    make([]*webrtc.TrackLocalStaticSample, 0, len(cfg.CamCfgs)),
+			AudioTracks:    make([]*webrtc.TrackLocalStaticSample, 0, 1),
 		})
 	}
 
@@ -134,6 +137,9 @@ func (a *App) Start() error {
 		return fmt.Errorf("error: failed creating mic: %w\n", err)
 	}
 	a.mic = mic
+	for i := range a.seats { //add audio video tracks to each seat
+		a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
+	}
 
 	defer func() {
 		log.Println("stopping...")
