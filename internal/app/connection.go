@@ -80,7 +80,7 @@ func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSampl
 	}
 
 	log.Println("set client track player")
-	c.PeerConnection.OnTrack(c.Speaker) //TODO: Update this to kick out video tracks
+	//c.PeerConnection.OnTrack(c.Speaker) //TODO: Update this to kick out video tracks
 
 	log.Println("start event listeners")
 	// Set the handler for ICE connection state
