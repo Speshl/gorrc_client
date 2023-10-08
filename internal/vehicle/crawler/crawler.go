@@ -100,6 +100,10 @@ func (c *Crawler) Start(ctx context.Context) error {
 				if err != nil {
 					return fmt.Errorf("failed applying crawler state: %w", err)
 				}
+
+				for i := range c.seats {
+					c.seats[i].UpdateHud(c.state)
+				}
 			}
 		}
 	})

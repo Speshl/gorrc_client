@@ -121,7 +121,11 @@ func (c *VehicleSeat[T]) UpdateHud(state VehicleStateIFace[T]) {
 
 	c.lock.Lock()
 	defer c.lock.Unlock()
-	c.seat.HudChannel <- c.hudUpdater(state)
+	select {
+	case c.seat.HudChannel <- c.hudUpdater(state):
+	default:
+		log.Printf("%s seat hud channel full, skipping\n", c.seatType)
+	}
 }
 
 func NewPress(oldState, newState models.ControlState, buttonIndex int, f func()) (bool, error) {
