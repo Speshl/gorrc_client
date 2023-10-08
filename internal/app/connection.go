@@ -67,19 +67,19 @@ func (c *Connection) Disconnect() {
 
 func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSample, videoTrack []*webrtc.TrackLocalStaticSample) error {
 
-	log.Println("adding audio track")
+	log.Println("adding car audio tracks")
 	_, err := c.PeerConnection.AddTrack(audioTrack[0]) //TODO add all audio tracks
 	if err != nil {
 		return fmt.Errorf("error adding audio track: %w", err)
 	}
 
-	log.Println("adding video track")
+	log.Println("adding car video tracks")
 	_, err = c.PeerConnection.AddTrack(videoTrack[0]) //TODO add all video tracks
 	if err != nil {
 		return fmt.Errorf("error adding video track: %w", err)
 	}
 
-	log.Println("set client track player")
+	log.Println("set user audio track player")
 	//c.PeerConnection.OnTrack(c.Speaker) //TODO: Update this to kick out video tracks
 
 	log.Println("start event listeners")
