@@ -186,11 +186,11 @@ func (a *App) Start() error {
 	}
 
 	//Start Mic
-	group.Go(func() error {
-		log.Printf("starting mic")
-		a.mic.Start()
-		return nil
-	})
+	// group.Go(func() error {
+	// 	log.Printf("starting mic")
+	// 	a.mic.Start()
+	// 	return nil
+	// })
 
 	//Start car
 	group.Go(func() error {
