@@ -52,6 +52,8 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
+	log.Printf("remote description: %s\n", a.userConns[offer.SeatNumber].PeerConnection.RemoteDescription())
+
 	log.Println("creating answer")
 
 	// Create answer

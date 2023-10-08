@@ -99,7 +99,7 @@ func (s *Speaker) TrackPlayer(track *webrtc.TrackRemote, receiver *webrtc.RTPRec
 			log.Printf("stopping client audio - error reading client audio track buffer - %s\n", err)
 			return
 		}
-		//log.Printf("Pushing %d bytes to pipeline", i)
+		log.Printf("Pushing %d bytes to pipeline", i)
 		pipeline.Push(buf[:i])
 	}
 }
