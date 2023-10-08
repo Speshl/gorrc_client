@@ -1,7 +1,6 @@
 package app
 
 import (
-	"context"
 	"log"
 
 	"github.com/Speshl/gorrc_client/internal/models"
@@ -29,7 +28,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	newConnection, err := NewConnection(context.Background(), socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
+	newConnection, err := NewConnection(socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
 	if err != nil {
 		log.Printf("error: failed creating connection on offer for seat %d: %s\n", offer.SeatNumber, err.Error())
 		return

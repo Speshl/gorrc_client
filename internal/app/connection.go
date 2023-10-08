@@ -31,7 +31,7 @@ type Connection struct {
 	PingOutput *webrtc.DataChannel
 }
 
-func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer) (*Connection, error) {
+func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer) (*Connection, error) {
 	log.Printf("Creating User Connection %s\n", socketConn.ID())
 	webrtcCfg := webrtc.Configuration{
 		ICEServers: []webrtc.ICEServer{
@@ -45,7 +45,7 @@ func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan ch
 		return nil, fmt.Errorf("Failed to create Peer Connection: %s", err)
 	}
 
-	ctx, cancel := context.WithCancel(ctx)
+	ctx, cancel := context.WithCancel(context.Background())
 	conn := &Connection{
 		// ID:             socketConn.ID(),
 		Socket:         socketConn,
@@ -59,6 +59,7 @@ func NewConnection(ctx context.Context, socketConn socketio.Conn, commandChan ch
 }
 
 func (c *Connection) Disconnect() {
+	log.Println("user disconnecting")
 	c.CtxCancel()
 	c.PeerConnection.Close()
 }

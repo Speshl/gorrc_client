@@ -13,6 +13,19 @@ const PingSourceName = "car"
 
 func (c *Connection) onICEConnectionStateChange(connectionState webrtc.ICEConnectionState) {
 	log.Printf("Connection State has changed: %s\n", connectionState.String())
+
+	switch connectionState {
+	case webrtc.ICEConnectionStateFailed:
+		c.Disconnect()
+	case webrtc.ICEConnectionStateChecking:
+	case webrtc.ICEConnectionStateCompleted:
+	case webrtc.ICEConnectionStateConnected:
+	case webrtc.ICEConnectionStateClosed:
+		c.Disconnect()
+	case webrtc.ICEConnectionStateDisconnected:
+	case webrtc.ICEConnectionStateNew:
+	default:
+	}
 }
 
 func (c *Connection) onICECandidate(candidate *webrtc.ICECandidate) {
