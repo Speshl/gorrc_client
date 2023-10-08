@@ -67,13 +67,13 @@ func (c *Connection) Disconnect() {
 func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSample, videoTrack []*webrtc.TrackLocalStaticSample) error {
 
 	log.Println("adding audio track")
-	_, err := c.PeerConnection.AddTrack(audioTrack[0]) //TODO all all audio tracks
-	if err != nil {
-		return fmt.Errorf("error adding audio track: %w", err)
-	}
+	// _, err := c.PeerConnection.AddTrack(audioTrack[0]) //TODO add all audio tracks
+	// if err != nil {
+	// 	return fmt.Errorf("error adding audio track: %w", err)
+	// }
 
 	log.Println("adding video track")
-	_, err = c.PeerConnection.AddTrack(videoTrack[0]) //TODO add all video tracks
+	_, err := c.PeerConnection.AddTrack(videoTrack[0]) //TODO add all video tracks
 	if err != nil {
 		return fmt.Errorf("error adding video track: %w", err)
 	}
@@ -99,7 +99,7 @@ func (c *Connection) RegisterHandlers(audioTrack []*webrtc.TrackLocalStaticSampl
 		for {
 			select {
 			case <-c.Ctx.Done():
-				log.Printf("stopping hud updater: %s\n", c.Ctx.Err().Error())
+				log.Printf("stopping user updater: %s\n", c.Ctx.Err().Error())
 				return
 			case hud, ok := <-c.HudChannel:
 				if !ok {

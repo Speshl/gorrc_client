@@ -132,14 +132,14 @@ func (a *App) Start() error {
 		}
 	}
 
-	mic, err := mic.NewMic(a.cfg.MicCfg)
-	if err != nil {
-		return fmt.Errorf("error: failed creating mic: %w\n", err)
-	}
-	a.mic = mic
-	for i := range a.seats { //add audio video tracks to each seat
-		a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
-	}
+	// mic, err := mic.NewMic(a.cfg.MicCfg)
+	// if err != nil {
+	// 	return fmt.Errorf("error: failed creating mic: %w\n", err)
+	// }
+	// a.mic = mic
+	// for i := range a.seats { //add audio video tracks to each seat
+	// 	a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
+	// }
 
 	defer func() {
 		log.Println("stopping...")
