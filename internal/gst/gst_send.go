@@ -143,7 +143,7 @@ func goHandlePipelineBuffer(buffer unsafe.Pointer, bufferLen C.int, duration C.i
 
 	if ok {
 		for _, t := range pipeline.tracks {
-			log.Println("writing mic samples")
+			//log.Println("writing mic samples")
 			if err := t.WriteSample(media.Sample{Data: C.GoBytes(buffer, bufferLen), Duration: time.Duration(duration)}); err != nil {
 				panic(err)
 			}

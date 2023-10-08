@@ -137,7 +137,7 @@ func (a *App) Start() error {
 		return fmt.Errorf("error: failed creating mic: %w\n", err)
 	}
 	a.mic = mic
-	for i := range a.seats { //add audio video tracks to each seat
+	for i := range a.seats { //add audio tracks to each seat
 		a.seats[i].AudioTracks = append(a.seats[i].AudioTracks, a.mic.AudioTrack)
 	}
 
