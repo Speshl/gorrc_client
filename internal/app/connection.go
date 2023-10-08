@@ -80,7 +80,7 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 	}
 
 	log.Println("set user audio track player")
-	//c.PeerConnection.OnTrack(c.Speaker) //TODO: Update this to kick out video tracks
+	c.PeerConnection.OnTrack(c.Speaker) //TODO: Update this to kick out video tracks
 
 	log.Println("start event listeners")
 	// Set the handler for ICE connection state
@@ -92,7 +92,7 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
-	go func() {
+	go func() { //TODO pull this out to somewhere else
 		pingTicker := time.NewTicker(10 * time.Second)
 		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
 		sent := true
