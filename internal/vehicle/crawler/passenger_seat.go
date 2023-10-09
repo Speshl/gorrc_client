@@ -8,7 +8,7 @@ import (
 )
 
 func NewPassengerSeat(seat *models.Seat) *vehicle.VehicleSeat[CrawlerState] {
-	return vehicle.NewVehicleSeat[CrawlerState](seat, passengerParser[CrawlerState], passngerCenter[CrawlerState], passengerHudUpdater[CrawlerState])
+	return vehicle.NewVehicleSeat[CrawlerState](seat, "passenger", passengerParser[CrawlerState], passngerCenter[CrawlerState], passengerHudUpdater[CrawlerState])
 }
 
 func passengerParser[T CrawlerState](oldCommand, newCommand models.ControlState, crawlerState vehicle.VehicleStateIFace[T]) vehicle.VehicleStateIFace[T] {

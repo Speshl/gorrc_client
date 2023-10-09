@@ -33,7 +33,7 @@ type VehicleSeat[T any] struct {
 	lastCommandTime time.Time
 }
 
-func NewVehicleSeat[T any](seat *models.Seat,
+func NewVehicleSeat[T any](seat *models.Seat, seatType string,
 	parser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T],
 	centerer func(VehicleStateIFace[T]) VehicleStateIFace[T],
 	hudUpdater func(VehicleStateIFace[T]) models.Hud) *VehicleSeat[T] {
@@ -42,7 +42,7 @@ func NewVehicleSeat[T any](seat *models.Seat,
 		seatCommandParser: parser,
 		seatCenterer:      centerer,
 		hudUpdater:        hudUpdater,
-		seatType:          "driver",
+		seatType:          seatType,
 		active:            false,
 		buttonMasks:       BuildButtonMasks(),
 	}
