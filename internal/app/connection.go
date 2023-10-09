@@ -29,6 +29,7 @@ type Connection struct {
 
 	HudOutput  *webrtc.DataChannel
 	PingOutput *webrtc.DataChannel
+	PingInput  chan int64
 }
 
 func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer) (*Connection, error) {
@@ -55,6 +56,7 @@ func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlStat
 		CommandChannel: commandChan,
 		HudChannel:     hudChan,
 		Speaker:        speakers,
+		PingInput:      make(chan int64, 10),
 	}
 	return conn, nil
 }
@@ -93,10 +95,11 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
 	go func() { //TODO pull this out to somewhere else
-		pingTicker := time.NewTicker(10 * time.Second)
+		pingTicker := time.NewTicker(1 * time.Second)
 		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
 		sent := true
 		hudToSend := models.Hud{}
+		lastPing := int64(0)
 		for {
 			select {
 			case <-c.Ctx.Done():
@@ -123,8 +126,15 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 						continue
 					}
 				}
+			case recievedPing, ok := <-c.PingInput:
+				if !ok {
+					log.Println("ping channel closed")
+					return
+				}
+				lastPing = recievedPing
 			case <-hudTicker.C:
 				if !sent && c.HudOutput != nil {
+					hudToSend.Lines = append(hudToSend.Lines, fmt.Sprintf("Ping:%dms", lastPing))
 					encodedMsg, err := encode(hudToSend)
 					sent = true
 					err = c.HudOutput.SendText(encodedMsg)

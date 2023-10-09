@@ -47,12 +47,12 @@ func driverCenter[T CrawlerState](state vehicle.VehicleStateIFace[T]) vehicle.Ve
 func driverHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T]) models.Hud {
 	newState := state.(CrawlerState)
 	lines := make([]string, 6)
-	lines[0] = fmt.Sprintf("Esc: %.2f", newState.Esc)
-	lines[1] = fmt.Sprintf("Gear: %s", newState.Ratios[newState.Gear].Name)
-	lines[2] = fmt.Sprintf("Steer: %.2f", newState.Steer)
-	lines[3] = fmt.Sprintf("Trim: %.2f", newState.SteerTrim)
-	lines[4] = fmt.Sprintf("Pan: %.2f", newState.Pan)
-	lines[5] = fmt.Sprintf("Tilt: %.2f", newState.Tilt)
+	lines[0] = fmt.Sprintf("Esc:%.2f", newState.Esc)
+	lines[1] = fmt.Sprintf("Gear:%s", newState.Ratios[newState.Gear].Name)
+	lines[2] = fmt.Sprintf("Steer:%.2f", newState.Steer)
+	lines[3] = fmt.Sprintf("Trim:%.2f", newState.SteerTrim)
+	lines[4] = fmt.Sprintf("Pan:%.2f", newState.Pan)
+	lines[5] = fmt.Sprintf("Tilt:%.2f", newState.Tilt)
 
 	return models.Hud{
 		Lines: lines,
