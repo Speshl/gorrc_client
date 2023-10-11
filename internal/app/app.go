@@ -230,7 +230,7 @@ func (a *App) Start() error {
 
 	defer func() {
 		if !a.cfg.ServerCfg.SilentShutdown {
-			err = a.speaker.Play(groupCtx, "shutdown")
+			err = a.speaker.Play(context.WithoutCancel(groupCtx), "shutdown")
 			if err != nil {
 				log.Printf("failed playing shutdown sound: %s\n", err.Error())
 			}
