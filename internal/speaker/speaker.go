@@ -55,6 +55,11 @@ func (s *Speaker) Start(ctx context.Context) error {
 }
 
 func (s *Speaker) Play(ctx context.Context, sound string) error {
+	if !s.cfg.Enabled {
+		log.Printf("warning: speaker disabled, not playing %s sound\n", sound)
+		return nil
+	}
+
 	log.Printf("start playing %s sound\n", sound)
 	defer log.Printf("finished playing %s sound\n", sound)
 
@@ -84,6 +89,11 @@ func (s *Speaker) Play(ctx context.Context, sound string) error {
 }
 
 func (s *Speaker) TrackPlayer(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+	if !s.cfg.Enabled {
+		log.Println("warning: speaker disabled, not playing user audio")
+		return
+	}
+
 	log.Println("start playing client track")
 	defer log.Println("done playing client track")
 	codecName := strings.Split(track.Codec().RTPCodecCapability.MimeType, "/")[1]

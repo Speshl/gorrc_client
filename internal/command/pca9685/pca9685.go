@@ -1,9 +1,10 @@
-package command
+package pca9685
 
 import (
 	"fmt"
 	"log"
 
+	command "github.com/Speshl/gorrc_client/internal/command"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"github.com/googolgl/go-i2c"
@@ -37,6 +38,10 @@ func NewCommand(cfg config.CommandConfig) *CommandDriver {
 	return &CommandDriver{
 		cfg: cfg,
 	}
+}
+
+func (c *CommandDriver) Stop() error {
+	return nil
 }
 
 func (c *CommandDriver) Init() error {
@@ -77,9 +82,9 @@ func (c *CommandDriver) CenterAll() {
 	}
 }
 
-func (c *CommandDriver) SetMany(commands []vehicle.DriverCommand) error {
-	for i := range commands {
-		err := c.Set(commands[i])
+func (c *CommandDriver) SetMany(cmds []vehicle.DriverCommand) error {
+	for i := range cmds {
+		err := c.Set(cmds[i])
 		if err != nil {
 			return err
 		}
@@ -87,30 +92,18 @@ func (c *CommandDriver) SetMany(commands []vehicle.DriverCommand) error {
 	return nil
 }
 
-func (c *CommandDriver) Set(command vehicle.DriverCommand) error {
-	val, ok := c.servos[command.Name]
+func (c *CommandDriver) Set(cmd vehicle.DriverCommand) error {
+	val, ok := c.servos[cmd.Name]
 	if ok {
-		mappedValue := mapToRange(command.Value+val.offset, command.Min, command.Max, MinValue, MaxValue)
-		if c.servos[command.Name].inverted {
+		mappedValue := command.MapToRange(cmd.Value+val.offset, cmd.Min, cmd.Max, MinValue, MaxValue)
+		if c.servos[cmd.Name].inverted {
 			mappedValue = MaxValue - mappedValue
 		}
 
-		err := c.servos[command.Name].servo.Fraction(float32(mappedValue))
+		err := c.servos[cmd.Name].servo.Fraction(float32(mappedValue))
 		if err != nil {
-			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", command.Name, mappedValue, err)
+			return fmt.Errorf("failed setting servo value - name: %s value:  %.2f - error: %w\n", cmd.Name, mappedValue, err)
 		}
 	}
 	return nil
-}
-
-func mapToRange(value, min, max, minReturn, maxReturn float64) float64 {
-	mappedValue := (maxReturn-minReturn)*(value-min)/(max-min) + minReturn
-
-	if mappedValue > maxReturn {
-		return maxReturn
-	} else if mappedValue < minReturn {
-		return minReturn
-	} else {
-		return mappedValue
-	}
 }

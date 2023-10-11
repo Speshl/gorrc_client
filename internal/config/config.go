@@ -35,16 +35,19 @@ const (
 	DefaultMode           = ""
 
 	// Default Speaker Options
-	DefaultSpeakerDevice = "0"
-	DefaultSpeakerVolume = "1.0"
+	DefaultSpeakerEnabled = false
+	DefaultSpeakerDevice  = "0"
+	DefaultSpeakerVolume  = "1.0"
 
 	// Default Speaker Options
-	DefaultMicDevice = "1"
-	DefaultMicVolume = "1.0"
+	DefaultMicEnabled = false
+	DefaultMicDevice  = "1"
+	DefaultMicVolume  = "1.0"
 
 	// Default Command Options
-	DefaultAddress   = 0x40
-	DefaultI2CDevice = "/dev/i2c-1"
+	DefaultCommandDriver = "pca9685"
+	DefaultAddress       = 0x40
+	DefaultI2CDevice     = "/dev/i2c-1"
 )
 
 type Config struct {
@@ -63,10 +66,11 @@ type ServerConfig struct {
 }
 
 type CommandConfig struct {
-	CarType   string
-	Address   byte
-	I2CDevice string
-	ServoCfgs []ServoConfig
+	CommandDriver string
+	CarType       string
+	Address       byte
+	I2CDevice     string
+	ServoCfgs     []ServoConfig
 }
 
 type ServoConfig struct {
@@ -97,13 +101,15 @@ type CamConfig struct {
 }
 
 type SpeakerConfig struct {
-	Device string
-	Volume string
+	Enabled bool
+	Device  string
+	Volume  string
 }
 
 type MicConfig struct {
-	Device string
-	Volume string
+	Enabled bool
+	Device  string
+	Volume  string
 }
 
 func GetConfig() Config {
@@ -130,10 +136,11 @@ func GetServerConfig() ServerConfig {
 
 func GetCommandConfig() CommandConfig {
 	commandCfg := CommandConfig{
-		CarType:   GetStringEnv("CARTYPE", DefaultCarType),
-		Address:   DefaultAddress, //  GetStringEnv("ADDRESS", DefaultAddress),
-		I2CDevice: GetStringEnv("I2CDEVICE", DefaultI2CDevice),
-		ServoCfgs: make([]ServoConfig, 0, MaxSupportedServos),
+		CommandDriver: GetStringEnv("SERVODRIVER", DefaultCommandDriver),
+		CarType:       GetStringEnv("CARTYPE", DefaultCarType),
+		Address:       DefaultAddress, //  GetStringEnv("ADDRESS", DefaultAddress),
+		I2CDevice:     GetStringEnv("I2CDEVICE", DefaultI2CDevice),
+		ServoCfgs:     make([]ServoConfig, 0, MaxSupportedServos),
 	}
 
 	for i := 0; i < MaxSupportedServos; i++ {
@@ -179,15 +186,17 @@ func GetCamConfig() []CamConfig {
 
 func GetSpeakerConfig() SpeakerConfig {
 	return SpeakerConfig{
-		Device: GetStringEnv("SPEAKERDEVICE", DefaultSpeakerDevice),
-		Volume: GetStringEnv("SPEAKERVOLUME", DefaultSpeakerVolume),
+		Enabled: GetBoolEnv("SPEAKERENABLED", DefaultSpeakerEnabled),
+		Device:  GetStringEnv("SPEAKERDEVICE", DefaultSpeakerDevice),
+		Volume:  GetStringEnv("SPEAKERVOLUME", DefaultSpeakerVolume),
 	}
 }
 
 func GetMicConfig() MicConfig {
 	return MicConfig{
-		Device: GetStringEnv("MICDEVICE", DefaultMicDevice),
-		Volume: GetStringEnv("MICVOLUME", DefaultMicVolume),
+		Enabled: GetBoolEnv("MICENABLED", DefaultMicEnabled),
+		Device:  GetStringEnv("MICDEVICE", DefaultMicDevice),
+		Volume:  GetStringEnv("MICVOLUME", DefaultMicVolume),
 	}
 }
 

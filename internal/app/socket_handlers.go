@@ -118,7 +118,7 @@ func (a *App) onRegisterSuccess(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	a.carInfo = decodedMsg.Car
+	a.vehicleInfo = decodedMsg.Car
 	a.trackInfo = decodedMsg.Track
-	log.Printf("car connected as %s(%s) @ %s(%s) with %d seats available\n", a.carInfo.Name, a.carInfo.ShortName, a.trackInfo.Name, a.trackInfo.ShortName, a.cfg.ServerCfg.SeatCount)
+	log.Printf("car connected as %s(%s) @ %s(%s) with %d seats available\n", a.vehicleInfo.Name, a.vehicleInfo.ShortName, a.trackInfo.Name, a.trackInfo.ShortName, a.cfg.ServerCfg.SeatCount)
 }

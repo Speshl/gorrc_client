@@ -47,7 +47,7 @@ func (t *TestCommand) Init() error {
 func (t *TestCommand) Set(name string, value, min, max float64) error {
 	val, ok := t.servos[name]
 	if ok {
-		mappedValue := mapToRange(value+val.offset, min, max, MinValue, MaxValue)
+		mappedValue := MapToRange(value+val.offset, min, max, MinValue, MaxValue)
 		if t.servos[name].inverted {
 			mappedValue = MaxValue - mappedValue
 		}
@@ -61,7 +61,7 @@ func (t *TestCommand) Set(name string, value, min, max float64) error {
 	return fmt.Errorf("servo %s not found", name)
 }
 
-func mapToRange(value, min, max, minReturn, maxReturn float64) float64 {
+func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {
 	mappedValue := (maxReturn-minReturn)*(value-min)/(max-min) + minReturn
 
 	if mappedValue > maxReturn {

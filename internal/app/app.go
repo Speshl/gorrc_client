@@ -11,7 +11,8 @@ import (
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/cam"
-	pca9685 "github.com/Speshl/gorrc_client/internal/command/pca9685"
+	"github.com/Speshl/gorrc_client/internal/command/pca9685"
+	pipwm "github.com/Speshl/gorrc_client/internal/command/pi_pwm"
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/gst"
 	"github.com/Speshl/gorrc_client/internal/mic"
@@ -32,10 +33,10 @@ type App struct {
 	ctxCancel context.CancelFunc
 	cfg       config.Config
 
-	car vehicle.Vehicle
+	vehicle vehicle.Vehicle
 
-	carInfo   models.Car
-	trackInfo models.Track
+	vehicleInfo models.Car
+	trackInfo   models.Track
 
 	client *socketio.Client
 
@@ -54,8 +55,6 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 
 	speakerChannel := make(chan string, 100)
 
-	command := pca9685.NewCommand(cfg.CommandCfg)
-
 	if cfg.ServerCfg.SeatCount < 1 || cfg.ServerCfg.SeatCount > 2 {
 		cfg.ServerCfg.SeatCount = config.DefaultSeatCount
 	}
@@ -71,21 +70,13 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		})
 	}
 
-	var car vehicle.Vehicle
-	switch cfg.CommandCfg.CarType {
-	case "crawler":
-		fallthrough
-	default:
-		car = crawler.NewCrawler(command, seats)
-	}
-
 	return &App{
 		cfg:            cfg,
 		client:         client,
 		ctx:            ctx,
 		ctxCancel:      cancel,
 		speakerChannel: speakerChannel,
-		car:            car,
+		vehicle:        newVehicle(cfg.CommandCfg, seats),
 		seats:          seats,
 		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
 		cams:           make([]*cam.Cam, 0, len(cfg.CamCfgs)),
@@ -199,12 +190,12 @@ func (a *App) Start() error {
 	//Start car
 	group.Go(func() error {
 		log.Printf("Starting car")
-		err := a.car.Init()
+		err := a.vehicle.Init()
 		if err != nil {
 			return err
 		}
 
-		return a.car.Start(groupCtx)
+		return a.vehicle.Start(groupCtx)
 	})
 
 	//Send connect and send healthchecks
@@ -246,4 +237,25 @@ func (a *App) Start() error {
 
 	log.Println("shutting down")
 	return a.client.Close()
+}
+
+func newCommand(cfg config.CommandConfig) vehicle.CommandDriverIFace {
+	switch cfg.CommandDriver {
+	case "pca9685":
+		return pca9685.NewCommand(cfg)
+	case "pipwm":
+		return pipwm.NewCommand(cfg)
+	default:
+		log.Println("warning: no servo driver selected, defaulting to pi pwm")
+		return pipwm.NewCommand(cfg)
+	}
+}
+
+func newVehicle(cfg config.CommandConfig, seats []models.Seat) vehicle.Vehicle {
+	switch cfg.CarType {
+	case "crawler":
+		fallthrough
+	default:
+		return crawler.NewCrawler(newCommand(cfg), seats)
+	}
 }

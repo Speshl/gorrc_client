@@ -14,6 +14,7 @@ type DriverCommand struct {
 
 type CommandDriverIFace interface {
 	Init() error
+	Stop() error
 	Set(DriverCommand) error
 	SetMany([]DriverCommand) error
 }

@@ -56,7 +56,7 @@ func NewCrawlerSeats(seats []models.Seat) []*vehicle.VehicleSeat[CrawlerState] {
 func (c *Crawler) Init() error {
 	err := c.commandDriver.Init()
 	if err != nil {
-		return fmt.Errorf("failed initializing crawler command interface: %w", err)
+		return fmt.Errorf("error: failed initializing crawler command interface: %w", err)
 	}
 
 	for i := range c.seats {
@@ -70,9 +70,20 @@ func (c *Crawler) Init() error {
 	return c.applyState(c.state)
 }
 
+func (c *Crawler) Stop() error {
+	log.Println("stopping crawler")
+	err := c.commandDriver.Stop()
+	if err != nil {
+		return fmt.Errorf("error: failed stopping command driver: %w", err)
+	}
+	return nil
+}
+
 func (c *Crawler) Start(ctx context.Context) error {
 	log.Println("starting crawler")
 	errGroup, errGroupCtx := errgroup.WithContext(ctx)
+
+	defer c.Stop()
 
 	for i := range c.seats {
 		seatNum := i
