@@ -242,8 +242,10 @@ func (a *App) Start() error {
 func newCommand(cfg config.CommandConfig) vehicle.CommandDriverIFace {
 	switch cfg.CommandDriver {
 	case "pca9685":
+		log.Println("command driver: pca9685")
 		return pca9685.NewCommand(cfg)
 	case "pipwm":
+		log.Println("command driver: pipwm")
 		return pipwm.NewCommand(cfg)
 	default:
 		log.Println("warning: no servo driver selected, defaulting to pi pwm")
