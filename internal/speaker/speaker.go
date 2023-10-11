@@ -36,7 +36,6 @@ func (s *Speaker) Start(ctx context.Context) error {
 		select {
 		case <-ctx.Done():
 			log.Println("speaker done due to ctx")
-			s.Play(context.Background(), "shutdown")
 			return nil
 		case data, ok := <-s.soundChannel:
 			if !ok {

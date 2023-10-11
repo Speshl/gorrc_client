@@ -220,10 +220,22 @@ func (a *App) Start() error {
 			}
 		}
 	})
-	err = a.speaker.Play(groupCtx, "startup")
-	if err != nil {
-		log.Printf("failed playing startup sound: %s\n", err.Error())
+
+	if !a.cfg.ServerCfg.SilentStart {
+		err = a.speaker.Play(groupCtx, "startup")
+		if err != nil {
+			log.Printf("failed playing startup sound: %s\n", err.Error())
+		}
 	}
+
+	defer func() {
+		if !a.cfg.ServerCfg.SilentShutdown {
+			err = a.speaker.Play(groupCtx, "shutdown")
+			if err != nil {
+				log.Printf("failed playing shutdown sound: %s\n", err.Error())
+			}
+		}
+	}()
 
 	err = group.Wait()
 	if err != nil {

@@ -13,11 +13,14 @@ const (
 	MaxSupportedCams   = 2
 	AppEnvBase         = "GORRC_"
 
-	DefaultServer    = "127.0.0.1:8181"
-	DefaultCarKey    = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
-	DefaultCarType   = "crawler"
-	DefaultPassword  = ""
-	DefaultSeatCount = 1
+	DefaultServer         = "127.0.0.1:8181"
+	DefaultCarKey         = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
+	DefaultCarType        = "crawler"
+	DefaultPassword       = ""
+	DefaultSeatCount      = 1
+	DefaultSilentStart    = false
+	DefaultSilentConnect  = false
+	DefaultSilentShutdown = false
 
 	DefaultMaxPulse = 2250 //2000
 	DefaultMinPulse = 750  //1000
@@ -59,10 +62,13 @@ type Config struct {
 }
 
 type ServerConfig struct {
-	Server    string
-	Key       string
-	Password  string
-	SeatCount int
+	Server         string
+	Key            string
+	Password       string
+	SeatCount      int
+	SilentStart    bool
+	SilentShutdown bool
+	SilentConnect  bool
 }
 
 type CommandConfig struct {
@@ -127,10 +133,13 @@ func GetConfig() Config {
 
 func GetServerConfig() ServerConfig {
 	return ServerConfig{
-		Server:    GetStringEnv("SERVER", DefaultServer),
-		Key:       GetStringEnv("CARKEY", DefaultCarKey),
-		Password:  GetStringEnv("CARPASSWORD", DefaultPassword),
-		SeatCount: GetIntEnv("SEATCOUNT", DefaultSeatCount),
+		Server:         GetStringEnv("SERVER", DefaultServer),
+		Key:            GetStringEnv("CARKEY", DefaultCarKey),
+		Password:       GetStringEnv("CARPASSWORD", DefaultPassword),
+		SeatCount:      GetIntEnv("SEATCOUNT", DefaultSeatCount),
+		SilentStart:    GetBoolEnv("SILENTSTART", DefaultSilentStart),
+		SilentShutdown: GetBoolEnv("SILENTSHUTDOWN", DefaultSilentShutdown),
+		SilentConnect:  GetBoolEnv("SILENTCONNECT", DefaultSilentConnect),
 	}
 }
 
