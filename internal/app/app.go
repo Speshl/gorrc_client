@@ -215,7 +215,7 @@ func (a *App) Start() error {
 				log.Println("health checker stopped")
 				return groupCtx.Err()
 			case <-healthTicker.C:
-				log.Println("server healthcheck: healthy")
+				//log.Println("server healthcheck: healthy")
 				a.client.Emit("car_healthy", "")
 			}
 		}

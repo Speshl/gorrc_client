@@ -10,6 +10,7 @@ import (
 )
 
 const PingSourceName = "car"
+const PingWarningThreshold = 50 * time.Millisecond
 
 func (c *Connection) onICEConnectionStateChange(connectionState webrtc.ICEConnectionState) {
 	log.Printf("Connection State has changed: %s\n", connectionState.String())
@@ -79,7 +80,9 @@ func (c *Connection) onPingHandler(data []byte) {
 	}
 	if ping.Source == PingSourceName {
 		roundTripTime := time.Now().UnixMilli() - ping.TimeStamp
-		log.Printf("user ping: %d ms\n", roundTripTime)
+		if roundTripTime > PingWarningThreshold.Milliseconds() {
+			log.Printf("warning: user ping > %d: %d ms\n", PingWarningThreshold.Microseconds(), roundTripTime)
+		}
 		c.PingInput <- roundTripTime
 	}
 }

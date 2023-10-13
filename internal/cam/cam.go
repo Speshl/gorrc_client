@@ -61,6 +61,7 @@ func (c *Cam) StartVideoDataListener(ctx context.Context) {
 				return
 			}
 
+			log.Println("writing video sample")
 			err := c.VideoTrack.WriteSample(media.Sample{Data: data, Duration: time.Millisecond * time.Duration(duration)})
 			if err != nil {
 				log.Printf("error writing sample to track: %s\n", err.Error())
