@@ -103,6 +103,7 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 		if ok {
 			if throttle > brake {
 				c.Esc = vehicle.MapToRange(throttle, MinInput, MaxInput, 0.0, ratio.Max)
+				log.Printf("Throttle %.2f Final %.2f", throttle, c.Esc)
 			} else if throttle < brake {
 				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
