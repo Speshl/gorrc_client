@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/models"
+	"github.com/prometheus/procfs"
 )
 
 const saftyTime = 200 * time.Millisecond
@@ -21,7 +22,7 @@ type VehicleSeat[T any] struct {
 
 	seatCenterer      func(VehicleStateIFace[T]) VehicleStateIFace[T]
 	seatCommandParser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T]
-	hudUpdater        func(VehicleStateIFace[T]) models.Hud
+	hudUpdater        func(VehicleStateIFace[T], procfs.NetDevLine) models.Hud
 
 	seatType string
 	active   bool
@@ -36,7 +37,7 @@ type VehicleSeat[T any] struct {
 func NewVehicleSeat[T any](seat *models.Seat, seatType string,
 	parser func(models.ControlState, models.ControlState, VehicleStateIFace[T]) VehicleStateIFace[T],
 	centerer func(VehicleStateIFace[T]) VehicleStateIFace[T],
-	hudUpdater func(VehicleStateIFace[T]) models.Hud) *VehicleSeat[T] {
+	hudUpdater func(VehicleStateIFace[T], procfs.NetDevLine) models.Hud) *VehicleSeat[T] {
 	return &VehicleSeat[T]{
 		seat:              seat,
 		seatCommandParser: parser,
@@ -114,7 +115,7 @@ func (c *VehicleSeat[T]) ApplyCommand(state VehicleStateIFace[T]) VehicleStateIF
 	}
 }
 
-func (c *VehicleSeat[T]) UpdateHud(state VehicleStateIFace[T]) {
+func (c *VehicleSeat[T]) UpdateHud(state VehicleStateIFace[T], netInfo procfs.NetDevLine) {
 	if !c.active {
 		return
 	}
@@ -122,7 +123,7 @@ func (c *VehicleSeat[T]) UpdateHud(state VehicleStateIFace[T]) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	select {
-	case c.seat.HudChannel <- c.hudUpdater(state):
+	case c.seat.HudChannel <- c.hudUpdater(state, netInfo):
 	default:
 		log.Printf("%s seat hud channel full, skipping\n", c.seatType)
 	}

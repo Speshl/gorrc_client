@@ -9,6 +9,7 @@ import (
 	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
+	"github.com/prometheus/procfs"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -140,6 +141,10 @@ func (c *Crawler) Start(ctx context.Context) error {
 
 	errGroup.Go(func() error {
 		commandTicker := time.NewTicker(33 * time.Millisecond)
+		p, err := procfs.Self()
+		if err != nil {
+			return fmt.Errorf("error: procfs could not get process: %w", err)
+		}
 		for {
 			select {
 			case <-errGroupCtx.Done():
@@ -158,8 +163,18 @@ func (c *Crawler) Start(ctx context.Context) error {
 					return fmt.Errorf("failed applying crawler state: %w", err)
 				}
 
+				netDev, err := p.NetDev() //update network stats
+				if err != nil {
+					return fmt.Errorf("error: failed getting netstat: %w", err)
+				}
+
+				wlan0Stats, ok := netDev["wlan0"]
+				if !ok {
+					return fmt.Errorf("error: failed getting wlan0 stats: not found")
+				}
+
 				for i := range c.seats {
-					c.seats[i].UpdateHud(c.state)
+					c.seats[i].UpdateHud(c.state, wlan0Stats)
 				}
 			}
 		}

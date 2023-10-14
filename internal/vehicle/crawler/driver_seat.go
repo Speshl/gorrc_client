@@ -5,6 +5,7 @@ import (
 
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
+	"github.com/prometheus/procfs"
 )
 
 func NewDriverSeat(seat *models.Seat) *vehicle.VehicleSeat[CrawlerState] {
@@ -44,15 +45,23 @@ func driverCenter[T CrawlerState](state vehicle.VehicleStateIFace[T]) vehicle.Ve
 	return newState
 }
 
-func driverHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T]) models.Hud {
+func driverHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T], netInfo procfs.NetDevLine) models.Hud {
 	newState := state.(CrawlerState)
-	lines := make([]string, 6)
+	lines := make([]string, 12)
 	lines[0] = fmt.Sprintf("Esc:%.2f", newState.Esc)
 	lines[1] = fmt.Sprintf("Gear:%s", newState.Ratios[newState.Gear].Name)
 	lines[2] = fmt.Sprintf("Steer:%.2f", newState.Steer)
 	lines[3] = fmt.Sprintf("Trim:%.2f", newState.SteerTrim)
 	lines[4] = fmt.Sprintf("Pan:%.2f", newState.Pan)
 	lines[5] = fmt.Sprintf("Tilt:%.2f", newState.Tilt)
+
+	lines[6] = fmt.Sprintf("RxPkt:%d", netInfo.RxPackets)
+	lines[7] = fmt.Sprintf("RxErr:%d", netInfo.RxErrors)
+	lines[8] = fmt.Sprintf("RxDrop: %d", netInfo.RxDropped)
+
+	lines[9] = fmt.Sprintf("TxPkt:%d", netInfo.TxPackets)
+	lines[10] = fmt.Sprintf("TxErr:%d", netInfo.TxErrors)
+	lines[11] = fmt.Sprintf("TxDrop: %d", netInfo.TxDropped)
 
 	return models.Hud{
 		Lines: lines,

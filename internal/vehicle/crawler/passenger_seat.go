@@ -5,6 +5,7 @@ import (
 
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
+	"github.com/prometheus/procfs"
 )
 
 func NewPassengerSeat(seat *models.Seat) *vehicle.VehicleSeat[CrawlerState] {
@@ -42,7 +43,7 @@ func passngerCenter[T CrawlerState](state vehicle.VehicleStateIFace[T]) vehicle.
 	return newState
 }
 
-func passengerHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T]) models.Hud {
+func passengerHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T], netInfo procfs.NetDevLine) models.Hud {
 	newState := state.(CrawlerState)
 	lines := make([]string, 3)
 	lines[0] = fmt.Sprintf("Trigger: %.2f", newState.Esc)
