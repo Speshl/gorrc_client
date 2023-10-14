@@ -76,7 +76,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		ctx:            ctx,
 		ctxCancel:      cancel,
 		speakerChannel: speakerChannel,
-		vehicle:        newVehicle(cfg.CommandCfg, seats),
+		vehicle:        newVehicle(cfg, seats),
 		seats:          seats,
 		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
 		cams:           make([]*cam.Cam, 0, len(cfg.CamCfgs)),
@@ -265,11 +265,11 @@ func newCommand(cfg config.CommandConfig) vehicle.CommandDriverIFace {
 	}
 }
 
-func newVehicle(cfg config.CommandConfig, seats []models.Seat) vehicle.Vehicle {
-	switch cfg.CarType {
+func newVehicle(cfg config.Config, seats []models.Seat) vehicle.Vehicle {
+	switch cfg.CommandCfg.CarType {
 	case "crawler":
 		fallthrough
 	default:
-		return crawler.NewCrawler(newCommand(cfg), seats)
+		return crawler.NewCrawler(cfg.CrawlerCfg, newCommand(cfg.CommandCfg), seats)
 	}
 }

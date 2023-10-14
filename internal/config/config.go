@@ -51,6 +51,22 @@ const (
 	DefaultCommandDriver = "pca9685"
 	DefaultAddress       = 0x40
 	DefaultI2CDevice     = "/dev/i2c-1"
+
+	//Vehicle Specific Configs
+	DefaultCrawlerGearRMin = -0.40
+	DefaultCrawlerGearRMax = 0.00
+	DefaultCrawlerGear1Min = -0.10
+	DefaultCrawlerGear1Max = 0.10
+	DefaultCrawlerGear2Min = -0.20
+	DefaultCrawlerGear2Max = 0.20
+	DefaultCrawlerGear3Min = -0.40
+	DefaultCrawlerGear3Max = 0.40
+	DefaultCrawlerGear4Min = -0.60
+	DefaultCrawlerGear4Max = 0.60
+	DefaultCrawlerGear5Min = -0.80
+	DefaultCrawlerGear5Max = 0.80
+	DefaultCrawlerGear6Min = -1.00
+	DefaultCrawlerGear6Max = 1.00
 )
 
 type Config struct {
@@ -59,6 +75,8 @@ type Config struct {
 	CamCfgs    []CamConfig
 	SpeakerCfg SpeakerConfig
 	MicCfg     MicConfig
+
+	CrawlerCfg CrawlerConfig
 }
 
 type ServerConfig struct {
@@ -118,6 +136,23 @@ type MicConfig struct {
 	Volume  string
 }
 
+type CrawlerConfig struct {
+	GearRMin float64
+	GearRMax float64
+	Gear1Min float64
+	Gear1Max float64
+	Gear2Min float64
+	Gear2Max float64
+	Gear3Min float64
+	Gear3Max float64
+	Gear4Min float64
+	Gear4Max float64
+	Gear5Min float64
+	Gear5Max float64
+	Gear6Min float64
+	Gear6Max float64
+}
+
 func GetConfig() Config {
 	cfg := Config{
 		ServerCfg:  GetServerConfig(),
@@ -125,6 +160,9 @@ func GetConfig() Config {
 		CamCfgs:    GetCamConfig(),
 		SpeakerCfg: GetSpeakerConfig(),
 		MicCfg:     GetMicConfig(),
+
+		//Vehicle specific configs
+		CrawlerCfg: GetCrawlerConfig(),
 	}
 
 	log.Printf("app Config: \n%+v\n", cfg)
@@ -209,6 +247,26 @@ func GetMicConfig() MicConfig {
 	}
 }
 
+func GetCrawlerConfig() CrawlerConfig {
+	envPrefix := "CRAWLER_"
+	return CrawlerConfig{
+		GearRMin: GetFloatEnv(envPrefix+"GEARR_MIN", DefaultCrawlerGearRMin),
+		GearRMax: GetFloatEnv(envPrefix+"GEARR_MAX", DefaultCrawlerGearRMax),
+		Gear1Min: GetFloatEnv(envPrefix+"GEAR1_MIN", DefaultCrawlerGear1Min),
+		Gear1Max: GetFloatEnv(envPrefix+"GEAR1_MAX", DefaultCrawlerGear1Max),
+		Gear2Min: GetFloatEnv(envPrefix+"GEAR2_MIN", DefaultCrawlerGear2Min),
+		Gear2Max: GetFloatEnv(envPrefix+"GEAR2_MAX", DefaultCrawlerGear2Max),
+		Gear3Min: GetFloatEnv(envPrefix+"GEAR3_MIN", DefaultCrawlerGear3Min),
+		Gear3Max: GetFloatEnv(envPrefix+"GEAR3_MAX", DefaultCrawlerGear3Max),
+		Gear4Min: GetFloatEnv(envPrefix+"GEAR4_MIN", DefaultCrawlerGear4Min),
+		Gear4Max: GetFloatEnv(envPrefix+"GEAR4_MAX", DefaultCrawlerGear4Max),
+		Gear5Min: GetFloatEnv(envPrefix+"GEAR5_MIN", DefaultCrawlerGear5Min),
+		Gear5Max: GetFloatEnv(envPrefix+"GEAR5_MAX", DefaultCrawlerGear5Max),
+		Gear6Min: GetFloatEnv(envPrefix+"GEAR6_MIN", DefaultCrawlerGear6Min),
+		Gear6Max: GetFloatEnv(envPrefix+"GEAR6_MAX", DefaultCrawlerGear6Max),
+	}
+}
+
 func GetIntEnv(env string, defaultValue int) int {
 	envValue, found := os.LookupEnv(AppEnvBase + env)
 	if !found {
@@ -245,5 +303,18 @@ func GetStringEnv(env string, defaultValue string) string {
 		return defaultValue
 	} else {
 		return strings.ToLower(strings.Trim(envValue, "\r"))
+	}
+}
+
+func GetFloatEnv(env string, defaultValue float64) float64 {
+	envValue, found := os.LookupEnv(AppEnvBase + env)
+	if !found {
+		return defaultValue
+	} else {
+		value, err := strconv.ParseFloat(envValue, 64)
+		if err != nil {
+			return defaultValue
+		}
+		return value
 	}
 }

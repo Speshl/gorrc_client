@@ -6,23 +6,25 @@ import (
 	"log"
 	"time"
 
+	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"golang.org/x/sync/errgroup"
 )
 
-func NewCrawler(commandDriver vehicle.CommandDriverIFace, seats []models.Seat) *Crawler {
+func NewCrawler(cfg config.CrawlerConfig, commandDriver vehicle.CommandDriverIFace, seats []models.Seat) *Crawler {
 	log.Printf("setting up crawler with %d seats\n", len(seats))
 
-	crawlerState := NewCrawlerState()
+	crawlerState := NewCrawlerState(cfg)
 	return &Crawler{
+		cfg:           cfg,
 		commandDriver: commandDriver,
 		state:         crawlerState,
 		seats:         NewCrawlerSeats(seats),
 	}
 }
 
-func NewCrawlerState() CrawlerState {
+func NewCrawlerState(cfg config.CrawlerConfig) CrawlerState {
 	return CrawlerState{
 		Gear:  0,
 		Esc:   0.0,
@@ -34,7 +36,48 @@ func NewCrawlerState() CrawlerState {
 		TurretPan:  0.0,
 		TurretTilt: 0.0,
 
-		Ratios: GearRatios,
+		Ratios: map[int]Ratio{
+			-1: {
+				Name: "R",
+				Max:  cfg.GearRMax,
+				Min:  cfg.GearRMin,
+			},
+			0: {
+				Name: "N",
+				Max:  0.0,
+				Min:  0.0,
+			},
+			1: {
+				Name: "1",
+				Max:  cfg.Gear1Max,
+				Min:  cfg.Gear1Min,
+			},
+			2: {
+				Name: "2",
+				Max:  cfg.Gear2Max,
+				Min:  cfg.Gear2Min,
+			},
+			3: {
+				Name: "3",
+				Max:  cfg.Gear3Max,
+				Min:  cfg.Gear3Min,
+			},
+			4: {
+				Name: "4",
+				Max:  cfg.Gear4Max,
+				Min:  cfg.Gear4Min,
+			},
+			5: {
+				Name: "5",
+				Max:  cfg.Gear5Max,
+				Min:  cfg.Gear5Min,
+			},
+			6: {
+				Name: "6",
+				Max:  cfg.Gear6Max,
+				Min:  cfg.Gear6Min,
+			},
+		},
 	}
 }
 
@@ -130,7 +173,7 @@ func (c *Crawler) Start(ctx context.Context) error {
 func (c *Crawler) mergeSeatStates(states []CrawlerState) CrawlerState {
 	if len(states) < 1 {
 		log.Println("no crawler states given, so making an empty one")
-		return NewCrawlerState()
+		return NewCrawlerState(c.cfg)
 	}
 
 	return states[0] //TODO actually merge instead of just taking driver commands

@@ -4,6 +4,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Speshl/gorrc_client/internal/config"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
 
@@ -51,49 +52,6 @@ var TransTypeMap = map[int]string{
 	1: TransTypeHPattern,
 }
 
-var GearRatios = map[int]Ratio{
-	-1: {
-		Name: "R",
-		Max:  0.0,
-		Min:  -0.4,
-	},
-	0: {
-		Name: "N",
-		Max:  0.0,
-		Min:  0.0,
-	},
-	1: {
-		Name: "1",
-		Max:  0.1,
-		Min:  -0.1,
-	},
-	2: {
-		Name: "2",
-		Max:  0.3,
-		Min:  -0.2,
-	},
-	3: {
-		Name: "3",
-		Max:  0.5,
-		Min:  -0.2,
-	},
-	4: {
-		Name: "4",
-		Max:  0.7,
-		Min:  -0.2,
-	},
-	5: {
-		Name: "5",
-		Max:  0.9,
-		Min:  -0.2,
-	},
-	6: {
-		Name: "6",
-		Max:  1.0,
-		Min:  -0.2,
-	},
-}
-
 type Ratio struct {
 	Name string
 	Max  float64
@@ -101,6 +59,7 @@ type Ratio struct {
 }
 
 type Crawler struct {
+	cfg           config.CrawlerConfig
 	lock          sync.RWMutex
 	seats         []*vehicle.VehicleSeat[CrawlerState]
 	state         CrawlerState
