@@ -111,7 +111,14 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 	a.client.Emit("answer", encodedAnswer)
 }
 
-func (a *App) onICECandidate(socketConn socketio.Conn, msg string) {
+func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
+	log.Println("ice candidate recieved")
+	if len(msgs) != 1 {
+		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
+		return
+	}
+	msg := msgs[0]
+
 	var userIceCandidate models.IceCandidate
 	err := decode(msg, &userIceCandidate)
 	if err != nil {
