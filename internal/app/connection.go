@@ -32,25 +32,13 @@ type Connection struct {
 	PingInput  chan int64
 }
 
-func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer) (*Connection, error) {
+func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer, peerConn *webrtc.PeerConnection) (*Connection, error) {
 	log.Printf("Creating User Connection %s\n", socketConn.ID())
-	webrtcCfg := webrtc.Configuration{
-		ICEServers: []webrtc.ICEServer{
-			{
-				URLs: []string{"stun:stun.l.google.com:19302"},
-			},
-		},
-	}
-	peerConnection, err := webrtc.NewPeerConnection(webrtcCfg)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to create Peer Connection: %s", err)
-	}
-
 	ctx, cancel := context.WithCancel(context.Background())
 	conn := &Connection{
 		// ID:             socketConn.ID(),
 		Socket:         socketConn,
-		PeerConnection: peerConnection,
+		PeerConnection: peerConn,
 		Ctx:            ctx,
 		CtxCancel:      cancel,
 		CommandChannel: commandChan,

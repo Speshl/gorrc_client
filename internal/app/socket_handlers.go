@@ -28,7 +28,22 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	newConnection, err := NewConnection(socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer)
+	peerConn, ok := a.userPeerConns[offer.UserId]
+	if !ok {
+		peerConn, err = webrtc.NewPeerConnection(webrtc.Configuration{
+			ICEServers: []webrtc.ICEServer{
+				{
+					URLs: []string{"stun:stun.l.google.com:19302"},
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("error: failed creating peer connection on ice candidate: %s\n", err.Error())
+			return
+		}
+	}
+
+	newConnection, err := NewConnection(socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer, peerConn)
 	if err != nil {
 		log.Printf("error: failed creating connection on offer for seat %d: %s\n", offer.SeatNumber, err.Error())
 		return
@@ -97,12 +112,36 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 }
 
 func (a *App) onICECandidate(socketConn socketio.Conn, msg string) {
-	decodedMsg := ""
-	err := decode(msg, &decodedMsg)
+	var userIceCandidate models.IceCandidate
+	err := decode(msg, &userIceCandidate)
 	if err != nil {
 		log.Printf("error: ice candidate from %s failed unmarshaling: %s\n", socketConn.ID(), string(msg))
 		return
 	}
+
+	peerConn, ok := a.userPeerConns[userIceCandidate.UserId]
+	if !ok {
+		peerConn, err = webrtc.NewPeerConnection(webrtc.Configuration{
+			ICEServers: []webrtc.ICEServer{
+				{
+					URLs: []string{"stun:stun.l.google.com:19302"},
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("error: failed creating peer connection on ice candidate: %s\n", err.Error())
+			return
+		}
+	}
+
+	err = peerConn.AddICECandidate(userIceCandidate.Candidate)
+	if err != nil {
+		log.Printf("error: failed to add ice candidate for user: %s\n", userIceCandidate.UserId.String())
+	}
+
+	a.userPeerConns[userIceCandidate.UserId] = peerConn
+
+	log.Printf("recieved ice candidate: %s\n", userIceCandidate.Candidate.Candidate)
 }
 
 func (a *App) onRegisterSuccess(socketConn socketio.Conn, msgs []string) {

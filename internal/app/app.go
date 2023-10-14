@@ -20,6 +20,7 @@ import (
 	"github.com/Speshl/gorrc_client/internal/speaker"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"github.com/Speshl/gorrc_client/internal/vehicle/crawler"
+	"github.com/google/uuid"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/pion/webrtc/v3"
 	"golang.org/x/sync/errgroup"
@@ -46,8 +47,9 @@ type App struct {
 	cams           []*cam.Cam
 	command        vehicle.CommandDriverIFace
 
-	seats     []models.Seat //number of available connections to this vehicle
-	userConns []*Connection
+	seats         []models.Seat //number of available connections to this vehicle
+	userConns     []*Connection
+	userPeerConns map[uuid.UUID]*webrtc.PeerConnection
 }
 
 func NewApp(cfg config.Config, client *socketio.Client) *App {
@@ -81,6 +83,7 @@ func NewApp(cfg config.Config, client *socketio.Client) *App {
 		speaker:        speaker.NewSpeaker(cfg.SpeakerCfg, speakerChannel),
 		cams:           make([]*cam.Cam, 0, len(cfg.CamCfgs)),
 		userConns:      make([]*Connection, cfg.ServerCfg.SeatCount),
+		userPeerConns:  make(map[uuid.UUID]*webrtc.PeerConnection, 2),
 	}
 }
 

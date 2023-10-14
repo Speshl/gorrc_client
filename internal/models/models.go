@@ -31,10 +31,18 @@ type Track struct {
 	Type      string    `json:"type"`
 }
 
+type IceCandidate struct {
+	Candidate    webrtc.ICECandidateInit `json:"candidate"`
+	CarShortName string                  `json:"car_name"`
+	SeatNum      int                     `json:"seat_number"`
+	UserId       uuid.UUID               `json:"user_id"`
+}
+
 type Offer struct {
 	Offer        webrtc.SessionDescription `json:"offer"`
 	CarShortName string                    `json:"car_name"`
 	SeatNumber   int                       `json:"seat_number"`
+	UserId       uuid.UUID                 `json:"user_id"`
 }
 
 type Answer struct {
