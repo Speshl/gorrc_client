@@ -8,6 +8,7 @@ require (
 	github.com/googolgl/go-pca9685 v0.1.6
 	github.com/googollee/go-socket.io v1.8.0-rc.1
 	github.com/pion/webrtc/v3 v3.2.21
+	github.com/prometheus/procfs v0.12.0
 	github.com/stianeikeland/go-rpio/v4 v4.6.0
 	golang.org/x/sync v0.4.0
 )
