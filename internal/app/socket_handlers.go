@@ -42,6 +42,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 			return
 		}
 	}
+	a.userPeerConns[offer.UserId] = peerConn
 
 	newConnection, err := NewConnection(socketConn, a.seats[offer.SeatNumber].CommandChannel, a.seats[offer.SeatNumber].HudChannel, a.speaker.TrackPlayer, peerConn)
 	if err != nil {
@@ -140,6 +141,11 @@ func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
 			log.Printf("error: failed creating peer connection for user %s on ice candidate: %s\n", userIceCandidate.UserId, err.Error())
 			return
 		}
+	}
+
+	if userIceCandidate.Candidate.Candidate == "" {
+		log.Println("warning: recieved empty ice candidate")
+		return
 	}
 
 	err = peerConn.AddICECandidate(userIceCandidate.Candidate)
