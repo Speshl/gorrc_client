@@ -36,6 +36,9 @@ func NewCrawlerState(cfg config.CrawlerConfig) CrawlerState {
 		TurretPan:  0.0,
 		TurretTilt: 0.0,
 
+		PanSpeed:  cfg.PanSpeed,
+		TiltSpeed: cfg.TiltSpeed,
+
 		Ratios: map[int]Ratio{
 			-1: {
 				Name: "R",

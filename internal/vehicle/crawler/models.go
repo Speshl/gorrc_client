@@ -29,9 +29,6 @@ const (
 	TopGear                 = 6
 	MaxTimeSinceLastCommand = 500 * time.Millisecond
 
-	MaxPanPerCycle  = 0.005
-	MaxTiltPerCycle = 0.005
-
 	MaxTrimPerCycle = .01
 
 	MaxVolumePerCycle = 10
@@ -84,6 +81,10 @@ type CrawlerState struct {
 	Trigger    float64
 	TurretPan  float64
 	TurretTilt float64
+
+	//Config
+	PanSpeed  float64
+	TiltSpeed float64
 
 	Ratios map[int]Ratio
 }

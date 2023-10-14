@@ -67,6 +67,9 @@ const (
 	DefaultCrawlerGear5Max = 0.80
 	DefaultCrawlerGear6Min = -1.00
 	DefaultCrawlerGear6Max = 1.00
+
+	DefaultCrawlerPanSpeed  = 1
+	DefaultCrawlerTiltSpeed = 1
 )
 
 type Config struct {
@@ -137,6 +140,9 @@ type MicConfig struct {
 }
 
 type CrawlerConfig struct {
+	PanSpeed  float64
+	TiltSpeed float64
+
 	GearRMin float64
 	GearRMax float64
 	Gear1Min float64
@@ -250,20 +256,22 @@ func GetMicConfig() MicConfig {
 func GetCrawlerConfig() CrawlerConfig {
 	envPrefix := "CRAWLER_"
 	return CrawlerConfig{
-		GearRMin: GetFloatEnv(envPrefix+"GEARR_MIN", DefaultCrawlerGearRMin),
-		GearRMax: GetFloatEnv(envPrefix+"GEARR_MAX", DefaultCrawlerGearRMax),
-		Gear1Min: GetFloatEnv(envPrefix+"GEAR1_MIN", DefaultCrawlerGear1Min),
-		Gear1Max: GetFloatEnv(envPrefix+"GEAR1_MAX", DefaultCrawlerGear1Max),
-		Gear2Min: GetFloatEnv(envPrefix+"GEAR2_MIN", DefaultCrawlerGear2Min),
-		Gear2Max: GetFloatEnv(envPrefix+"GEAR2_MAX", DefaultCrawlerGear2Max),
-		Gear3Min: GetFloatEnv(envPrefix+"GEAR3_MIN", DefaultCrawlerGear3Min),
-		Gear3Max: GetFloatEnv(envPrefix+"GEAR3_MAX", DefaultCrawlerGear3Max),
-		Gear4Min: GetFloatEnv(envPrefix+"GEAR4_MIN", DefaultCrawlerGear4Min),
-		Gear4Max: GetFloatEnv(envPrefix+"GEAR4_MAX", DefaultCrawlerGear4Max),
-		Gear5Min: GetFloatEnv(envPrefix+"GEAR5_MIN", DefaultCrawlerGear5Min),
-		Gear5Max: GetFloatEnv(envPrefix+"GEAR5_MAX", DefaultCrawlerGear5Max),
-		Gear6Min: GetFloatEnv(envPrefix+"GEAR6_MIN", DefaultCrawlerGear6Min),
-		Gear6Max: GetFloatEnv(envPrefix+"GEAR6_MAX", DefaultCrawlerGear6Max),
+		PanSpeed:  GetFloatEnv(envPrefix+"PAN_SPEED", DefaultCrawlerPanSpeed),
+		TiltSpeed: GetFloatEnv(envPrefix+"TILT_SPEED", DefaultCrawlerTiltSpeed),
+		GearRMin:  GetFloatEnv(envPrefix+"GEARR_MIN", DefaultCrawlerGearRMin),
+		GearRMax:  GetFloatEnv(envPrefix+"GEARR_MAX", DefaultCrawlerGearRMax),
+		Gear1Min:  GetFloatEnv(envPrefix+"GEAR1_MIN", DefaultCrawlerGear1Min),
+		Gear1Max:  GetFloatEnv(envPrefix+"GEAR1_MAX", DefaultCrawlerGear1Max),
+		Gear2Min:  GetFloatEnv(envPrefix+"GEAR2_MIN", DefaultCrawlerGear2Min),
+		Gear2Max:  GetFloatEnv(envPrefix+"GEAR2_MAX", DefaultCrawlerGear2Max),
+		Gear3Min:  GetFloatEnv(envPrefix+"GEAR3_MIN", DefaultCrawlerGear3Min),
+		Gear3Max:  GetFloatEnv(envPrefix+"GEAR3_MAX", DefaultCrawlerGear3Max),
+		Gear4Min:  GetFloatEnv(envPrefix+"GEAR4_MIN", DefaultCrawlerGear4Min),
+		Gear4Max:  GetFloatEnv(envPrefix+"GEAR4_MAX", DefaultCrawlerGear4Max),
+		Gear5Min:  GetFloatEnv(envPrefix+"GEAR5_MIN", DefaultCrawlerGear5Min),
+		Gear5Max:  GetFloatEnv(envPrefix+"GEAR5_MAX", DefaultCrawlerGear5Max),
+		Gear6Min:  GetFloatEnv(envPrefix+"GEAR6_MIN", DefaultCrawlerGear6Min),
+		Gear6Max:  GetFloatEnv(envPrefix+"GEAR6_MAX", DefaultCrawlerGear6Max),
 	}
 }
 
