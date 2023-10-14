@@ -22,7 +22,6 @@ import (
 	"github.com/Speshl/gorrc_client/internal/vehicle/crawler"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/pion/webrtc/v3"
-	"github.com/prometheus/procfs"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -103,24 +102,6 @@ func (a *App) RegisterHandlers() error {
 		return fmt.Errorf("error: failed connecting to server - %w", err)
 	}
 	log.Println("connected to server")
-
-	p, err := procfs.Self()
-	if err != nil {
-		return fmt.Errorf("error: procfs could not get process: %w", err)
-	}
-
-	netDev, err := p.NetDev()
-	if err != nil {
-		return fmt.Errorf("error: failed getting netstat: %w", err)
-	}
-
-	log.Printf("NetDev: %+v\n", netDev)
-
-	wlan0Net, found := netDev["wlan0"]
-	if found {
-		log.Printf("wlan0: %+v\n", wlan0Net)
-	}
-
 	return nil
 }
 

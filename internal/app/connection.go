@@ -134,7 +134,9 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 				lastPing = recievedPing
 			case <-hudTicker.C:
 				if !sent && c.HudOutput != nil {
-					hudToSend.Lines = append(hudToSend.Lines, fmt.Sprintf("Ping:%dms", lastPing))
+					if len(hudToSend.Lines) > 0 {
+						hudToSend.Lines[0] = fmt.Sprintf("%s | Ping:%dms", lastPing)
+					}
 					encodedMsg, err := encode(hudToSend)
 					sent = true
 					err = c.HudOutput.SendText(encodedMsg)

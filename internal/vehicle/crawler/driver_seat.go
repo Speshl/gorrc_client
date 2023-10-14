@@ -47,23 +47,50 @@ func driverCenter[T CrawlerState](state vehicle.VehicleStateIFace[T]) vehicle.Ve
 
 func driverHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T], netInfo procfs.NetDevLine) models.Hud {
 	newState := state.(CrawlerState)
-	lines := make([]string, 12)
-	lines[0] = fmt.Sprintf("Esc:%.2f", newState.Esc)
-	lines[1] = fmt.Sprintf("Gear:%s", newState.Ratios[newState.Gear].Name)
-	lines[2] = fmt.Sprintf("Steer:%.2f", newState.Steer)
-	lines[3] = fmt.Sprintf("Trim:%.2f", newState.SteerTrim)
-	lines[4] = fmt.Sprintf("Pan:%.2f", newState.Pan)
-	lines[5] = fmt.Sprintf("Tilt:%.2f", newState.Tilt)
+	lines := make([]string, 2)
 
-	lines[6] = fmt.Sprintf("RxPkt:%d", netInfo.RxPackets)
-	lines[7] = fmt.Sprintf("RxErr:%d", netInfo.RxErrors)
-	lines[8] = fmt.Sprintf("RxDrop: %d", netInfo.RxDropped)
+	lines[0] = fmt.Sprintf("RxPkt:%d | RxErr:%d | RxDrop: %d | TxPkt:%d | TxErr:%d | TxDrop: %d",
+		netInfo.RxPackets,
+		netInfo.RxErrors,
+		netInfo.RxDropped,
+		netInfo.TxPackets,
+		netInfo.TxErrors,
+		netInfo.TxDropped,
+	)
 
-	lines[9] = fmt.Sprintf("TxPkt:%d", netInfo.TxPackets)
-	lines[10] = fmt.Sprintf("TxErr:%d", netInfo.TxErrors)
-	lines[11] = fmt.Sprintf("TxDrop: %d", netInfo.TxDropped)
+	lines[1] = fmt.Sprintf("Esc:%.2f | Gear:%s | Steer:%.2f | Trim:%.2f | Pan:%.2f | Tilt:%.2f",
+		newState.Esc,
+		newState.Ratios[newState.Gear].Name,
+		newState.Steer,
+		newState.SteerTrim,
+		newState.Pan,
+		newState.Tilt,
+	)
 
 	return models.Hud{
 		Lines: lines,
 	}
 }
+
+// func driverHudUpdater[T CrawlerState](state vehicle.VehicleStateIFace[T], netInfo procfs.NetDevLine) models.Hud {
+// 	newState := state.(CrawlerState)
+// 	lines := make([]string, 12)
+// 	lines[0] = fmt.Sprintf("Esc:%.2f", newState.Esc)
+// 	lines[1] = fmt.Sprintf("Gear:%s", newState.Ratios[newState.Gear].Name)
+// 	lines[2] = fmt.Sprintf("Steer:%.2f", newState.Steer)
+// 	lines[3] = fmt.Sprintf("Trim:%.2f", newState.SteerTrim)
+// 	lines[4] = fmt.Sprintf("Pan:%.2f", newState.Pan)
+// 	lines[5] = fmt.Sprintf("Tilt:%.2f", newState.Tilt)
+
+// 	lines[6] = fmt.Sprintf("RxPkt:%d", netInfo.RxPackets)
+// 	lines[7] = fmt.Sprintf("RxErr:%d", netInfo.RxErrors)
+// 	lines[8] = fmt.Sprintf("RxDrop: %d", netInfo.RxDropped)
+
+// 	lines[9] = fmt.Sprintf("TxPkt:%d", netInfo.TxPackets)
+// 	lines[10] = fmt.Sprintf("TxErr:%d", netInfo.TxErrors)
+// 	lines[11] = fmt.Sprintf("TxDrop: %d", netInfo.TxDropped)
+
+// 	return models.Hud{
+// 		Lines: lines,
+// 	}
+// }
