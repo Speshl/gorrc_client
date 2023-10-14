@@ -114,7 +114,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
 	log.Println("ice candidate recieved")
 	if len(msgs) != 1 {
-		log.Printf("error: offer from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
+		log.Printf("error: ice candidate from %s had to many msgs: %d\n", socketConn.ID(), len(msgs))
 		return
 	}
 	msg := msgs[0]
@@ -128,6 +128,7 @@ func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
 
 	peerConn, ok := a.userPeerConns[userIceCandidate.UserId]
 	if !ok {
+		log.Printf("creating new peer connection for user %s\n", userIceCandidate.UserId)
 		peerConn, err = webrtc.NewPeerConnection(webrtc.Configuration{
 			ICEServers: []webrtc.ICEServer{
 				{
@@ -136,14 +137,15 @@ func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
 			},
 		})
 		if err != nil {
-			log.Printf("error: failed creating peer connection on ice candidate: %s\n", err.Error())
+			log.Printf("error: failed creating peer connection for user %s on ice candidate: %s\n", userIceCandidate.UserId, err.Error())
 			return
 		}
 	}
 
 	err = peerConn.AddICECandidate(userIceCandidate.Candidate)
 	if err != nil {
-		log.Printf("error: failed to add ice candidate for user: %s\n", userIceCandidate.UserId.String())
+		log.Printf("error: failed to add ice candidate for user %s: %s\n", userIceCandidate.UserId.String(), err.Error())
+		return
 	}
 
 	a.userPeerConns[userIceCandidate.UserId] = peerConn
