@@ -109,12 +109,17 @@ func (a *App) RegisterHandlers() error {
 		return fmt.Errorf("error: procfs could not get process: %w", err)
 	}
 
-	netStat, err := p.Netstat()
+	netDev, err := p.NetDev()
 	if err != nil {
 		return fmt.Errorf("error: failed getting netstat: %w", err)
 	}
 
-	log.Printf("NetStat: %+v\n", netStat)
+	log.Printf("NetDev: %+v\n", netDev)
+
+	wlan0Net, found := netDev["wlan0"]
+	if found {
+		log.Printf("wlan0: %+v\n", wlan0Net)
+	}
 
 	return nil
 }
