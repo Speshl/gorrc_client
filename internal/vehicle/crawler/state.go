@@ -1,27 +1,25 @@
 package crawler
 
 import (
-	"log"
-
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
 
 func (c *CrawlerState) upShift() {
-	log.Println("up shift")
+	//log.Println("up shift")
 	if c.Gear < TopGear {
 		c.Gear++
 	}
 }
 
 func (c *CrawlerState) downShift() {
-	log.Println("down shift")
+	//log.Println("down shift")
 	if c.Gear > -1 {
 		c.Gear--
 	}
 }
 
 func (c *CrawlerState) trimSteerLeft() {
-	log.Println("trim steer left")
+	//log.Println("trim steer left")
 	if c.SteerTrim-MaxTrimPerCycle < MinInput {
 		c.SteerTrim = MinInput
 	} else {
@@ -30,7 +28,7 @@ func (c *CrawlerState) trimSteerLeft() {
 }
 
 func (c *CrawlerState) trimSteerRight() {
-	log.Println("trim steer right")
+	//log.Println("trim steer right")
 	if c.SteerTrim+MaxTrimPerCycle > MaxInput {
 		c.SteerTrim = MaxInput
 	} else {
@@ -39,13 +37,13 @@ func (c *CrawlerState) trimSteerRight() {
 }
 
 func (c *CrawlerState) camCenter() {
-	log.Println("cam center")
+	//log.Println("cam center")
 	c.Pan = 0.0
 	c.Tilt = 0.0
 }
 
 func (c *CrawlerState) turretCenter() {
-	log.Println("turret center")
+	//log.Println("turret center")
 	c.TurretPan = 0.0
 	c.TurretTilt = 0.0
 }
@@ -103,7 +101,7 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 		if ok {
 			if throttle > brake {
 				c.Esc = vehicle.MapToRange(throttle, MinInput, MaxInput, 0.0, ratio.Max)
-				log.Printf("Throttle %.2f Final %.2f", throttle, c.Esc)
+				//log.Printf("Throttle %.2f Final %.2f", throttle, c.Esc)
 			} else if throttle < brake {
 				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
