@@ -30,6 +30,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 
 	peerConn, ok := a.userPeerConns[offer.UserId]
 	if !ok {
+		log.Printf("creating new peer connection for user %s\n", offer.UserId)
 		peerConn, err = webrtc.NewPeerConnection(webrtc.Configuration{
 			ICEServers: []webrtc.ICEServer{
 				{
