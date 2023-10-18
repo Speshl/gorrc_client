@@ -2,6 +2,7 @@ package crawler
 
 import (
 	"github.com/Speshl/gorrc_client/internal/vehicle"
+	"golang.org/x/exp/slog"
 )
 
 func (c *CrawlerState) upShift() {
@@ -79,8 +80,8 @@ func (c *CrawlerState) mapSteer(value float64) {
 }
 
 func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
-	throttle = vehicle.MapTriggerWithDeadZone(throttle, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
-	brake = vehicle.MapTriggerWithDeadZone(brake, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
+	throttleWithDeadzone := vehicle.MapTriggerWithDeadZone(throttle, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
+	brakeWithDeadzone := vehicle.MapTriggerWithDeadZone(brake, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
 	// throttle = vehicle.GetValueWithLowDeadZone(throttle, 0, DeadZone)
 	// brake = vehicle.GetValueWithLowDeadZone(brake, 0, DeadZone)
 
@@ -90,10 +91,10 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 	if c.Gear == -1 {
 		ratio, ok := c.Ratios[c.Gear]
 		if ok {
-			if throttle > brake {
+			if throttleWithDeadzone > brakeWithDeadzone {
 				c.Esc = 0.0
-			} else if throttle < brake {
-				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
+			} else if throttleWithDeadzone < brakeWithDeadzone {
+				c.Esc = vehicle.MapToRange(brakeWithDeadzone*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
 				c.Esc = 0.0
 			}
@@ -103,16 +104,22 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 	if c.Gear >= 1 && c.Gear <= TopGear {
 		ratio, ok := c.Ratios[c.Gear]
 		if ok {
-			if throttle > brake {
-				c.Esc = vehicle.MapToRange(throttle, MinInput, MaxInput, 0.0, ratio.Max)
+			if throttleWithDeadzone > brakeWithDeadzone {
+				c.Esc = vehicle.MapToRange(throttleWithDeadzone, MinInput, MaxInput, 0.0, ratio.Max)
 				//log.Printf("Throttle %.2f Final %.2f", throttle, c.Esc)
-			} else if throttle < brake {
-				c.Esc = vehicle.MapToRange(brake*-1, MinInput, MaxInput, ratio.Min, 0.0)
+			} else if throttleWithDeadzone < brakeWithDeadzone {
+				c.Esc = vehicle.MapToRange(brakeWithDeadzone*-1, MinInput, MaxInput, ratio.Min, 0.0)
 			} else {
 				c.Esc = 0.0
 			}
 		}
 	}
+
+	slog.Info(
+		"throttle", throttle,
+		"throttleWithDeadzone", throttleWithDeadzone,
+		"esc", c.Esc,
+	)
 }
 
 func (c *CrawlerState) mapPan(value float64) {

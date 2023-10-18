@@ -36,7 +36,7 @@ const (
 	MaxVolume = 100
 	MinVolume = 0
 
-	DeadZone = 0.05
+	DeadZone = 0.01
 
 	MaxInput  = 1.0
 	MinInput  = -1.0
