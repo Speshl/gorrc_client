@@ -146,7 +146,7 @@ func NewPress(oldState, newState models.ControlState, buttonIndex int, f func())
 }
 
 func MapTriggerWithDeadZone(value, min, max, minReturn, maxReturn, deadzone, midValue float64) float64 {
-	if value > deadzone {
+	if value > (min + deadzone) {
 		valueWithDeadzone := value - deadzone
 		maxWithDeadzone := max - deadzone
 		return MapToRange(valueWithDeadzone, min, maxWithDeadzone, minReturn, maxReturn)

@@ -115,7 +115,7 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 		}
 	}
 
-	slog.Info(
+	slog.Info("throttle",
 		"throttle", throttle,
 		"throttleWithDeadzone", throttleWithDeadzone,
 		"esc", c.Esc,
