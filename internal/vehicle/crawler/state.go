@@ -80,8 +80,8 @@ func (c *CrawlerState) mapSteer(value float64) {
 }
 
 func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
-	throttleWithDeadzone := vehicle.MapTriggerWithDeadZone(throttle, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
-	brakeWithDeadzone := vehicle.MapTriggerWithDeadZone(brake, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
+	throttleWithDeadzone := vehicle.MapTriggerWithDeadZone(throttle, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, -1)
+	brakeWithDeadzone := vehicle.MapTriggerWithDeadZone(brake, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, -1)
 	// throttle = vehicle.GetValueWithLowDeadZone(throttle, 0, DeadZone)
 	// brake = vehicle.GetValueWithLowDeadZone(brake, 0, DeadZone)
 
