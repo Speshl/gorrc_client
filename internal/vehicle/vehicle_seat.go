@@ -145,21 +145,44 @@ func NewPress(oldState, newState models.ControlState, buttonIndex int, f func())
 	return false, nil
 }
 
-func GetValueWithMidDeadZone(value, midValue, deadZone float64) float64 {
-	if value > midValue && midValue+deadZone > value {
-		return midValue
-	} else if value < midValue && midValue-deadZone < value {
-		return midValue
+func MapTriggerWithDeadZone(value, min, max, minReturn, maxReturn, deadzone, midValue float64) float64 {
+	if value > deadzone {
+		valueWithDeadzone := value - deadzone
+		maxWithDeadzone := max - deadzone
+		return MapToRange(valueWithDeadzone, min, maxWithDeadzone, minReturn, maxReturn)
 	}
-	return value
+	return midValue
 }
 
-func GetValueWithLowDeadZone(value, lowValue, deadZone float64) float64 {
-	if value > lowValue && lowValue+deadZone > value {
-		return lowValue
+func MapAxisWithDeadZone(value, min, max, minReturn, maxReturn, deadzone, midValue float64) float64 {
+	if value > deadzone || value < (deadzone*-1) {
+		valueWithDeadzone := value - deadzone
+		if value < (deadzone * -1) {
+			valueWithDeadzone = value + deadzone
+		}
+
+		minWithDeadzone := min + deadzone
+		maxWithDeadzone := max - deadzone
+		return MapToRange(valueWithDeadzone, minWithDeadzone, maxWithDeadzone, minReturn, maxReturn)
 	}
-	return value
+	return midValue
 }
+
+// func GetValueWithMidDeadZone(value, midValue, deadZone float64) float64 {
+// 	if value > midValue && midValue+deadZone > value {
+// 		return midValue
+// 	} else if value < midValue && midValue-deadZone < value {
+// 		return midValue
+// 	}
+// 	return value
+// }
+
+// func GetValueWithLowDeadZone(value, lowValue, deadZone float64) float64 {
+// 	if value > lowValue && lowValue+deadZone > value {
+// 		return lowValue
+// 	}
+// 	return value
+// }
 
 func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {
 	mappedValue := (maxReturn-minReturn)*(value-min)/(max-min) + minReturn
