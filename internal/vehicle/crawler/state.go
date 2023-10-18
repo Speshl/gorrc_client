@@ -2,25 +2,21 @@ package crawler
 
 import (
 	"github.com/Speshl/gorrc_client/internal/vehicle"
-	"golang.org/x/exp/slog"
 )
 
 func (c *CrawlerState) upShift() {
-	//log.Println("up shift")
 	if c.Gear < TopGear {
 		c.Gear++
 	}
 }
 
 func (c *CrawlerState) downShift() {
-	//log.Println("down shift")
 	if c.Gear > -1 {
 		c.Gear--
 	}
 }
 
 func (c *CrawlerState) trimSteerLeft() {
-	//log.Println("trim steer left")
 	if c.SteerTrim-MaxTrimPerCycle < MinInput {
 		c.SteerTrim = MinInput
 	} else {
@@ -29,7 +25,6 @@ func (c *CrawlerState) trimSteerLeft() {
 }
 
 func (c *CrawlerState) trimSteerRight() {
-	//log.Println("trim steer right")
 	if c.SteerTrim+MaxTrimPerCycle > MaxInput {
 		c.SteerTrim = MaxInput
 	} else {
@@ -38,52 +33,22 @@ func (c *CrawlerState) trimSteerRight() {
 }
 
 func (c *CrawlerState) camCenter() {
-	//log.Println("cam center")
 	c.Pan = 0.0
 	c.Tilt = 0.0
 }
 
 func (c *CrawlerState) turretCenter() {
-	//log.Println("turret center")
 	c.TurretPan = 0.0
 	c.TurretTilt = 0.0
 }
 
-// func (c *CrawlerState) volumeMute() {
-// 	log.Println("volume mute")
-// 	c.Volume = MinVolume
-// }
-
-// func (c *CrawlerState) volumeUp() {
-// 	log.Println("volume up")
-// 	if c.Volume+MaxVolumePerCycle > MaxVolume {
-// 		c.Volume = MaxVolume
-// 	} else {
-// 		c.Volume += MaxVolumePerCycle
-// 	}
-// }
-
-// func (c *CrawlerState) volumeDown() {
-// 	log.Println("volume down")
-// 	if c.Volume-MaxVolumePerCycle < MinVolume {
-// 		c.Volume = MinVolume
-// 	} else {
-// 		c.Volume -= MaxVolumePerCycle
-// 	}
-// }
-
 func (c *CrawlerState) mapSteer(value float64) {
-	// value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
-	// c.Steer = vehicle.MapToRange(value+c.SteerTrim, MinInput, MaxInput, MinOutput, MaxOutput)
-
 	c.Steer = vehicle.MapAxisWithDeadZone(value+c.SteerTrim, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, 0)
 }
 
 func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 	throttleWithDeadzone := vehicle.MapTriggerWithDeadZone(throttle, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, -1)
 	brakeWithDeadzone := vehicle.MapTriggerWithDeadZone(brake, MinInput, MaxInput, MinOutput, MaxOutput, DeadZone, -1)
-	// throttle = vehicle.GetValueWithLowDeadZone(throttle, 0, DeadZone)
-	// brake = vehicle.GetValueWithLowDeadZone(brake, 0, DeadZone)
 
 	if c.Gear == 0 {
 		c.Esc = 0.0
@@ -114,17 +79,9 @@ func (c *CrawlerState) mapEsc(throttle float64, brake float64) {
 			}
 		}
 	}
-
-	slog.Info("throttle",
-		"throttle", throttle,
-		"throttleWithDeadzone", throttleWithDeadzone,
-		"esc", c.Esc,
-	)
 }
 
 func (c *CrawlerState) mapPan(value float64) {
-	// value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
-	// posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*c.PanSpeed, c.PanSpeed)
 	posAdjust := vehicle.MapAxisWithDeadZone(value, MinInput, MaxInput, -1*c.PanSpeed, c.PanSpeed, DeadZone, 0)
 
 	if c.Pan+posAdjust > MaxOutput {
@@ -137,9 +94,6 @@ func (c *CrawlerState) mapPan(value float64) {
 }
 
 func (c *CrawlerState) mapTilt(value float64) {
-	// value = vehicle.GetValueWithMidDeadZone(value, 0, DeadZone)
-	// posAdjust := vehicle.MapToRange(value, MinInput, MaxInput, -1*c.TiltSpeed, c.TiltSpeed)
-
 	posAdjust := vehicle.MapAxisWithDeadZone(value, MinInput, MaxInput, -1*c.TiltSpeed, c.TiltSpeed, DeadZone, 0)
 	if c.Tilt+posAdjust > MaxOutput {
 		c.Tilt = MaxOutput

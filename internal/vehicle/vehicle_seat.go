@@ -168,22 +168,6 @@ func MapAxisWithDeadZone(value, min, max, minReturn, maxReturn, deadzone, midVal
 	return midValue
 }
 
-// func GetValueWithMidDeadZone(value, midValue, deadZone float64) float64 {
-// 	if value > midValue && midValue+deadZone > value {
-// 		return midValue
-// 	} else if value < midValue && midValue-deadZone < value {
-// 		return midValue
-// 	}
-// 	return value
-// }
-
-// func GetValueWithLowDeadZone(value, lowValue, deadZone float64) float64 {
-// 	if value > lowValue && lowValue+deadZone > value {
-// 		return lowValue
-// 	}
-// 	return value
-// }
-
 func MapToRange(value, min, max, minReturn, maxReturn float64) float64 {
 	mappedValue := (maxReturn-minReturn)*(value-min)/(max-min) + minReturn
 
