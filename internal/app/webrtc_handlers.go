@@ -3,6 +3,7 @@ package app
 import (
 	"encoding/json"
 	"log"
+	"log/slog"
 	"time"
 
 	"github.com/Speshl/gorrc_client/internal/models"
@@ -68,6 +69,8 @@ func (c *Connection) onCommandHandler(data []byte) {
 		log.Printf("error: failed unmarshalling data channel msg: %s\n", data)
 		return
 	}
+	slog.Info("Command",
+		"throttle", state.Axes[1])
 	c.CommandChannel <- state
 }
 
