@@ -31,7 +31,7 @@ func (c *Connection) onICEConnectionStateChange(connectionState webrtc.ICEConnec
 
 func (c *Connection) onICECandidate(candidate *webrtc.ICECandidate) {
 	if candidate != nil {
-		log.Printf("recieved ICE candidate from client: %s (not used)\n", candidate.String())
+		//log.Printf("recieved ICE candidate from client: %s (not used)\n", candidate.String())
 	}
 }
 

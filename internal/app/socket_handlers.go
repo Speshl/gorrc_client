@@ -132,7 +132,7 @@ func (a *App) onICECandidate(socketConn socketio.Conn, msgs []string) {
 
 	//a.userPeerConns[userIceCandidate.UserId] = peerConn
 
-	log.Printf("recieved ice candidate: %s\n", userIceCandidate.Candidate.Candidate)
+	//log.Printf("recieved ice candidate: %s\n", userIceCandidate.Candidate.Candidate)
 }
 
 func (a *App) onRegisterSuccess(socketConn socketio.Conn, msgs []string) {
@@ -170,6 +170,8 @@ func (a *App) getOrCreatePeerConn(userId uuid.UUID) (*webrtc.PeerConnection, err
 			return nil, fmt.Errorf("error: failed creating peer connection for user %s on ice candidate: %w\n", userId, err)
 		}
 		a.userPeerConns[userId] = peerConn
+	} else {
+		log.Printf("reusing peer connection for user %s\n", userId)
 	}
 	return peerConn, nil
 }
