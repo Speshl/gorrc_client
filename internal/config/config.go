@@ -8,157 +8,6 @@ import (
 	"strings"
 )
 
-const (
-	MaxSupportedServos = 16
-	MaxSupportedCams   = 2
-	AppEnvBase         = "GORRC_"
-
-	DefaultServer         = "127.0.0.1:8181"
-	DefaultCarKey         = "c0b839e9-0962-4494-9840-4b8751e15d90" //TODO Remove after testing
-	DefaultCarType        = "crawler"
-	DefaultPassword       = ""
-	DefaultSeatCount      = 1
-	DefaultSilentStart    = false
-	DefaultSilentConnect  = false
-	DefaultSilentShutdown = false
-
-	DefaultMaxPulse = 2250 //2000
-	DefaultMinPulse = 750  //1000
-	DefaultInverted = false
-	DefaultOffset   = 0
-
-	// Default Camera Options
-	DefaultCamEnable      = false
-	DefaultWidth          = "320"
-	DefaultHeight         = "240"
-	DefaultFPS            = "30"
-	DefaultVerticalFlip   = false
-	DefaultHorizontalFlip = false
-	DefaultProfile        = "high"
-	DefaultMode           = ""
-
-	// Default Speaker Options
-	DefaultSpeakerEnabled = false
-	DefaultSpeakerDevice  = "0"
-	DefaultSpeakerVolume  = "1.0"
-
-	// Default Speaker Options
-	DefaultMicEnabled = false
-	DefaultMicDevice  = "1"
-	DefaultMicVolume  = "1.0"
-
-	// Default Command Options
-	DefaultCommandDriver = "pca9685"
-	DefaultAddress       = 0x40
-	DefaultI2CDevice     = "/dev/i2c-1"
-
-	//Vehicle Specific Configs
-	DefaultCrawlerGearRMin = -0.40
-	DefaultCrawlerGearRMax = 0.00
-	DefaultCrawlerGear1Min = -0.10
-	DefaultCrawlerGear1Max = 0.10
-	DefaultCrawlerGear2Min = -0.20
-	DefaultCrawlerGear2Max = 0.20
-	DefaultCrawlerGear3Min = -0.40
-	DefaultCrawlerGear3Max = 0.40
-	DefaultCrawlerGear4Min = -0.60
-	DefaultCrawlerGear4Max = 0.60
-	DefaultCrawlerGear5Min = -0.80
-	DefaultCrawlerGear5Max = 0.80
-	DefaultCrawlerGear6Min = -1.00
-	DefaultCrawlerGear6Max = 1.00
-
-	DefaultCrawlerPanSpeed  = 1
-	DefaultCrawlerTiltSpeed = 1
-)
-
-type Config struct {
-	ServerCfg  ServerConfig
-	CommandCfg CommandConfig
-	CamCfgs    []CamConfig
-	SpeakerCfg SpeakerConfig
-	MicCfg     MicConfig
-
-	CrawlerCfg CrawlerConfig
-}
-
-type ServerConfig struct {
-	Server         string
-	Key            string
-	Password       string
-	SeatCount      int
-	SilentStart    bool
-	SilentShutdown bool
-	SilentConnect  bool
-}
-
-type CommandConfig struct {
-	CommandDriver string
-	CarType       string
-	Address       byte
-	I2CDevice     string
-	ServoCfgs     []ServoConfig
-}
-
-type ServoConfig struct {
-	Name     string
-	Inverted bool
-	Type     string
-	Channel  int
-	MaxPulse float64
-	MinPulse float64
-	DeadZone int
-	Offset   int
-}
-
-type CamConfig struct {
-	Enabled        bool
-	Device         string
-	Width          string
-	Height         string
-	Fps            string
-	DisableVideo   bool
-	HorizontalFlip bool
-	VerticalFlip   bool
-	DeNoise        bool
-	Rotation       int
-	Level          string
-	Profile        string
-	Mode           string
-}
-
-type SpeakerConfig struct {
-	Enabled bool
-	Device  string
-	Volume  string
-}
-
-type MicConfig struct {
-	Enabled bool
-	Device  string
-	Volume  string
-}
-
-type CrawlerConfig struct {
-	PanSpeed  float64
-	TiltSpeed float64
-
-	GearRMin float64
-	GearRMax float64
-	Gear1Min float64
-	Gear1Max float64
-	Gear2Min float64
-	Gear2Max float64
-	Gear3Min float64
-	Gear3Max float64
-	Gear4Min float64
-	Gear4Max float64
-	Gear5Min float64
-	Gear5Max float64
-	Gear6Min float64
-	Gear6Max float64
-}
-
 func GetConfig() Config {
 	cfg := Config{
 		ServerCfg:  GetServerConfig(),
@@ -168,7 +17,8 @@ func GetConfig() Config {
 		MicCfg:     GetMicConfig(),
 
 		//Vehicle specific configs
-		CrawlerCfg: GetCrawlerConfig(),
+		CrawlerCfg:    GetCrawlerConfig(),
+		SmallRacerCfg: GetSmallRacerConfig(),
 	}
 
 	log.Printf("app Config: \n%+v\n", cfg)
@@ -190,7 +40,6 @@ func GetServerConfig() ServerConfig {
 func GetCommandConfig() CommandConfig {
 	commandCfg := CommandConfig{
 		CommandDriver: GetStringEnv("SERVODRIVER", DefaultCommandDriver),
-		CarType:       GetStringEnv("CARTYPE", DefaultCarType),
 		Address:       DefaultAddress, //  GetStringEnv("ADDRESS", DefaultAddress),
 		I2CDevice:     GetStringEnv("I2CDEVICE", DefaultI2CDevice),
 		ServoCfgs:     make([]ServoConfig, 0, MaxSupportedServos),
@@ -256,22 +105,37 @@ func GetMicConfig() MicConfig {
 func GetCrawlerConfig() CrawlerConfig {
 	envPrefix := "CRAWLER_"
 	return CrawlerConfig{
-		PanSpeed:  GetFloatEnv(envPrefix+"PAN_SPEED", DefaultCrawlerPanSpeed),
-		TiltSpeed: GetFloatEnv(envPrefix+"TILT_SPEED", DefaultCrawlerTiltSpeed),
-		GearRMin:  GetFloatEnv(envPrefix+"GEARR_MIN", DefaultCrawlerGearRMin),
-		GearRMax:  GetFloatEnv(envPrefix+"GEARR_MAX", DefaultCrawlerGearRMax),
-		Gear1Min:  GetFloatEnv(envPrefix+"GEAR1_MIN", DefaultCrawlerGear1Min),
-		Gear1Max:  GetFloatEnv(envPrefix+"GEAR1_MAX", DefaultCrawlerGear1Max),
-		Gear2Min:  GetFloatEnv(envPrefix+"GEAR2_MIN", DefaultCrawlerGear2Min),
-		Gear2Max:  GetFloatEnv(envPrefix+"GEAR2_MAX", DefaultCrawlerGear2Max),
-		Gear3Min:  GetFloatEnv(envPrefix+"GEAR3_MIN", DefaultCrawlerGear3Min),
-		Gear3Max:  GetFloatEnv(envPrefix+"GEAR3_MAX", DefaultCrawlerGear3Max),
-		Gear4Min:  GetFloatEnv(envPrefix+"GEAR4_MIN", DefaultCrawlerGear4Min),
-		Gear4Max:  GetFloatEnv(envPrefix+"GEAR4_MAX", DefaultCrawlerGear4Max),
-		Gear5Min:  GetFloatEnv(envPrefix+"GEAR5_MIN", DefaultCrawlerGear5Min),
-		Gear5Max:  GetFloatEnv(envPrefix+"GEAR5_MAX", DefaultCrawlerGear5Max),
-		Gear6Min:  GetFloatEnv(envPrefix+"GEAR6_MIN", DefaultCrawlerGear6Min),
-		Gear6Max:  GetFloatEnv(envPrefix+"GEAR6_MAX", DefaultCrawlerGear6Max),
+		PanSpeed:      GetFloatEnv(envPrefix+"PAN_SPEED", DefaultCrawlerPanSpeed),
+		TiltSpeed:     GetFloatEnv(envPrefix+"TILT_SPEED", DefaultCrawlerTiltSpeed),
+		VehicleConfig: GetVehicleConfig(),
+	}
+}
+
+func GetSmallRacerConfig() SmallRacerConfig {
+	envPrefix := "SMALLRACER_"
+	return SmallRacerConfig{
+		SteerSpeed:    GetFloatEnv(envPrefix+"STEER_SPEED", DefaultSmallRacerSteerSpeed),
+		VehicleConfig: GetVehicleConfig(),
+	}
+}
+
+func GetVehicleConfig() VehicleConfig {
+	return VehicleConfig{
+		VehicleType: GetStringEnv("VEHICLETYPE", DefaultVehicleType),
+		GearRMin:    GetFloatEnv("GEARR_MIN", DefaultCrawlerGearRMin),
+		GearRMax:    GetFloatEnv("GEARR_MAX", DefaultCrawlerGearRMax),
+		Gear1Min:    GetFloatEnv("GEAR1_MIN", DefaultCrawlerGear1Min),
+		Gear1Max:    GetFloatEnv("GEAR1_MAX", DefaultCrawlerGear1Max),
+		Gear2Min:    GetFloatEnv("GEAR2_MIN", DefaultCrawlerGear2Min),
+		Gear2Max:    GetFloatEnv("GEAR2_MAX", DefaultCrawlerGear2Max),
+		Gear3Min:    GetFloatEnv("GEAR3_MIN", DefaultCrawlerGear3Min),
+		Gear3Max:    GetFloatEnv("GEAR3_MAX", DefaultCrawlerGear3Max),
+		Gear4Min:    GetFloatEnv("GEAR4_MIN", DefaultCrawlerGear4Min),
+		Gear4Max:    GetFloatEnv("GEAR4_MAX", DefaultCrawlerGear4Max),
+		Gear5Min:    GetFloatEnv("GEAR5_MIN", DefaultCrawlerGear5Min),
+		Gear5Max:    GetFloatEnv("GEAR5_MAX", DefaultCrawlerGear5Max),
+		Gear6Min:    GetFloatEnv("GEAR6_MIN", DefaultCrawlerGear6Min),
+		Gear6Max:    GetFloatEnv("GEAR6_MAX", DefaultCrawlerGear6Max),
 	}
 }
 

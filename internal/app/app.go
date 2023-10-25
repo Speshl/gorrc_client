@@ -20,6 +20,7 @@ import (
 	"github.com/Speshl/gorrc_client/internal/speaker"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 	"github.com/Speshl/gorrc_client/internal/vehicle/crawler"
+	smallracer "github.com/Speshl/gorrc_client/internal/vehicle/smallRacer"
 	"github.com/google/uuid"
 	socketio "github.com/googollee/go-socket.io"
 	"github.com/pion/webrtc/v3"
@@ -269,10 +270,12 @@ func newCommand(cfg config.CommandConfig) vehicle.CommandDriverIFace {
 }
 
 func newVehicle(cfg config.Config, seats []models.Seat) vehicle.Vehicle {
-	switch cfg.CommandCfg.CarType {
+	switch cfg.SmallRacerCfg.VehicleType {
 	case "crawler":
+		return crawler.NewCrawler(cfg.CrawlerCfg, newCommand(cfg.CommandCfg), seats)
+	case "smallracer":
 		fallthrough
 	default:
-		return crawler.NewCrawler(cfg.CrawlerCfg, newCommand(cfg.CommandCfg), seats)
+		return smallracer.NewSmallRacer(cfg.SmallRacerCfg, newCommand(cfg.CommandCfg), seats)
 	}
 }

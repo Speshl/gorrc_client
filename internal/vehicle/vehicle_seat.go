@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"math"
 	"sync"
 	"time"
 
@@ -186,4 +187,13 @@ func ParseButtons(bitButton uint32, masks []uint32) []bool {
 		returnvalue[i] = ((bitButton & masks[i]) != 0) //Check if bitbutton and mask both have bits in same place
 	}
 	return returnvalue
+}
+
+func SigmoidCurve(x, a float64) float64 {
+	return 1 / (1 + math.Exp(-a*(x-0.5)))
+}
+
+// Makes steering less sensitive near middle
+func PowCurve(x float64) float64 {
+	return math.Pow(x, 1.3)
 }

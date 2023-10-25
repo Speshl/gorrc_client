@@ -31,16 +31,16 @@ func (c *Connection) onICEConnectionStateChange(connectionState webrtc.ICEConnec
 
 func (c *Connection) onICECandidate(candidate *webrtc.ICECandidate) {
 	if candidate != nil {
-		log.Printf("recieved ICE candidate from client: %s\n", candidate.String())
+		log.Printf("recieved ICE candidate from client: %s (not used)\n", candidate.String())
 	}
 }
 
 func (c *Connection) onDataChannel(d *webrtc.DataChannel) {
-	log.Printf("new data channel: %s\n", d.Label())
+	log.Printf("new data channel for seat %d: %s\n", d.Label(), c.SeatNumber)
 
 	// Register channel opening handler
 	d.OnOpen(func() {
-		log.Printf("data channel open: %s\n", d.Label())
+		log.Printf("data channel open for seat %d: %s\n", d.Label(), c.SeatNumber)
 		switch d.Label() {
 		case "hud":
 			c.HudOutput = d
@@ -57,7 +57,7 @@ func (c *Connection) onDataChannel(d *webrtc.DataChannel) {
 		d.OnMessage(func(msg webrtc.DataChannelMessage) { c.onPingHandler(msg.Data) })
 	case "hud":
 	default:
-		log.Printf("recieved message on unsupported channel: %s\n", d.Label())
+		log.Printf("recieved message on unsupported channel for seat %d: %s\n", d.Label(), c.SeatNumber)
 	}
 }
 
@@ -81,7 +81,7 @@ func (c *Connection) onPingHandler(data []byte) {
 	if ping.Source == PingSourceName {
 		roundTripTime := time.Now().UnixMilli() - ping.TimeStamp
 		if roundTripTime > PingWarningThreshold.Milliseconds() {
-			log.Printf("warning: user ping > %d: %d ms\n", PingWarningThreshold.Microseconds(), roundTripTime)
+			log.Printf("warning: user ping > %d for seat %d: %d ms\n", PingWarningThreshold.Microseconds(), c.SeatNumber, roundTripTime)
 		}
 		c.PingInput <- roundTripTime
 	}

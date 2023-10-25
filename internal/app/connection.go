@@ -17,7 +17,7 @@ type AudioPlayer func(*webrtc.TrackRemote, *webrtc.RTPReceiver)
 type CommandHandler func(models.ControlState)
 
 type Connection struct {
-	// ID             string
+	SeatNumber     int
 	Socket         socketio.Conn
 	PeerConnection *webrtc.PeerConnection
 	Ctx            context.Context
@@ -32,11 +32,11 @@ type Connection struct {
 	PingInput  chan int64
 }
 
-func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer, peerConn *webrtc.PeerConnection) (*Connection, error) {
-	log.Printf("Creating User Connection %s\n", socketConn.ID())
+func NewConnection(seatNum int, socketConn socketio.Conn, commandChan chan models.ControlState, hudChan chan models.Hud, speakers AudioPlayer, peerConn *webrtc.PeerConnection) (*Connection, error) {
+	log.Printf("creating user connection %s for seat %d\n", socketConn.ID(), seatNum)
 	ctx, cancel := context.WithCancel(context.Background())
 	conn := &Connection{
-		// ID:             socketConn.ID(),
+		SeatNumber:     seatNum,
 		Socket:         socketConn,
 		PeerConnection: peerConn,
 		Ctx:            ctx,
@@ -50,7 +50,7 @@ func NewConnection(socketConn socketio.Conn, commandChan chan models.ControlStat
 }
 
 func (c *Connection) Disconnect() {
-	log.Println("user disconnecting")
+	log.Println("user disconnecting from seat %d", c.SeatNumber)
 	c.CtxCancel()
 	c.PeerConnection.Close()
 }
@@ -82,7 +82,12 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 
 	c.PeerConnection.OnDataChannel(c.onDataChannel)
 
-	go func() { //TODO pull this out to somewhere else
+	c.StartUserUpdater()
+	return nil
+}
+
+func (c *Connection) StartUserUpdater() {
+	go func() {
 		pingTicker := time.NewTicker(1 * time.Second)
 		hudTicker := time.NewTicker(33 * time.Millisecond) //30hz
 		sent := true
@@ -91,11 +96,11 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 		for {
 			select {
 			case <-c.Ctx.Done():
-				log.Printf("stopping user updater: %s\n", c.Ctx.Err().Error())
+				log.Printf("stopping user updater for seat %d: %s\n", c.SeatNumber, c.Ctx.Err().Error())
 				return
 			case hud, ok := <-c.HudChannel:
 				if !ok {
-					log.Println("hud channel closed")
+					log.Println("hud channel closed for seat %d", c.SeatNumber)
 					return
 				}
 				if c.HudOutput != nil {
@@ -116,7 +121,7 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 				}
 			case recievedPing, ok := <-c.PingInput:
 				if !ok {
-					log.Println("ping channel closed")
+					log.Println("ping channel closed for seat %d", c.SeatNumber)
 					return
 				}
 				lastPing = recievedPing
@@ -136,5 +141,4 @@ func (c *Connection) RegisterHandlers(audioTracks []*webrtc.TrackLocalStaticSamp
 			}
 		}
 	}()
-	return nil
 }
