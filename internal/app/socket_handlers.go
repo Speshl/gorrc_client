@@ -51,14 +51,14 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	log.Println("setting remote description for seat %d\n", offer.SeatNumber)
+	log.Printf("setting remote description for seat %d\n", offer.SeatNumber)
 	err = a.userConns[offer.SeatNumber].PeerConnection.SetRemoteDescription(offer.Offer)
 	if err != nil {
 		log.Printf("error: failed to set remote description for seat %d: %s\n", offer.SeatNumber, err)
 		return
 	}
 
-	log.Println("creating answer for seat %d\n", offer.SeatNumber)
+	log.Printf("creating answer for seat %d\n", offer.SeatNumber)
 	answer, err := a.userConns[offer.SeatNumber].PeerConnection.CreateAnswer(nil)
 	if err != nil {
 		log.Printf("error: failed to create answer for seat %d: %s\n", offer.SeatNumber, err)

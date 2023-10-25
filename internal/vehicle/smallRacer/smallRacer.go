@@ -110,7 +110,7 @@ func (c *SmallRacer) Init() error {
 }
 
 func (c *SmallRacer) Stop() error {
-	log.Println("stopping crawler")
+	log.Println("stopping small racer")
 	err := c.commandDriver.Stop()
 	if err != nil {
 		return fmt.Errorf("error: failed stopping command driver: %w", err)
@@ -119,7 +119,7 @@ func (c *SmallRacer) Stop() error {
 }
 
 func (c *SmallRacer) Start(ctx context.Context) error {
-	log.Println("starting crawler")
+	log.Println("starting small racer")
 	errGroup, errGroupCtx := errgroup.WithContext(ctx)
 
 	defer c.Stop()
@@ -174,7 +174,7 @@ func (c *SmallRacer) Start(ctx context.Context) error {
 
 	err := errGroup.Wait()
 	if err != nil {
-		return fmt.Errorf("crawler error group closed: %w", err)
+		return fmt.Errorf("small racer error group closed: %w", err)
 	}
 	return nil
 }
@@ -182,7 +182,7 @@ func (c *SmallRacer) Start(ctx context.Context) error {
 // mergeSeatStates merges multiple states into one state. For cases where two seats have control over 1 axis, you can determine mixing here
 func (c *SmallRacer) mergeSeatStates(states []SmallRacerState) SmallRacerState {
 	if len(states) < 1 {
-		log.Println("no crawler states given, so making an empty one")
+		log.Println("no small racer states given, so making an empty one")
 		return NewSmallRacerState(c.cfg)
 	}
 

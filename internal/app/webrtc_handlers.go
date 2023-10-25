@@ -36,11 +36,11 @@ func (c *Connection) onICECandidate(candidate *webrtc.ICECandidate) {
 }
 
 func (c *Connection) onDataChannel(d *webrtc.DataChannel) {
-	log.Printf("new data channel for seat %d: %s\n", d.Label(), c.SeatNumber)
+	log.Printf("new data channel for seat %d: %s\n", c.SeatNumber, d.Label())
 
 	// Register channel opening handler
 	d.OnOpen(func() {
-		log.Printf("data channel open for seat %d: %s\n", d.Label(), c.SeatNumber)
+		log.Printf("data channel open for seat %d: %s\n", c.SeatNumber, d.Label())
 		switch d.Label() {
 		case "hud":
 			c.HudOutput = d
@@ -57,7 +57,7 @@ func (c *Connection) onDataChannel(d *webrtc.DataChannel) {
 		d.OnMessage(func(msg webrtc.DataChannelMessage) { c.onPingHandler(msg.Data) })
 	case "hud":
 	default:
-		log.Printf("recieved message on unsupported channel for seat %d: %s\n", d.Label(), c.SeatNumber)
+		log.Printf("recieved message on unsupported channel for seat %d: %s\n", c.SeatNumber, d.Label())
 	}
 }
 
