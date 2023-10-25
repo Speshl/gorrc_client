@@ -30,7 +30,7 @@ func (a *App) onOffer(socketConn socketio.Conn, msgs []string) {
 		return
 	}
 
-	peerConn, err := a.getOrCreatePeerConn(offer.UserId)
+	peerConn, err := a.CreatePeerConn(offer.UserId)
 	if err != nil {
 		log.Printf("error: failed getting or creating peer conn: %s\n", err.Error())
 		return
@@ -173,5 +173,28 @@ func (a *App) getOrCreatePeerConn(userId uuid.UUID) (*webrtc.PeerConnection, err
 	} else {
 		log.Printf("reusing peer connection for user %s\n", userId)
 	}
+	return peerConn, nil
+}
+
+func (a *App) CreatePeerConn(userId uuid.UUID) (*webrtc.PeerConnection, error) {
+	var err error
+
+	peerConn, ok := a.userPeerConns[userId]
+	if ok {
+		log.Printf("close and recreating peer connection for user %s\n", userId)
+		peerConn.Close()
+	}
+	peerConn, err = webrtc.NewPeerConnection(webrtc.Configuration{
+		ICEServers: []webrtc.ICEServer{
+			{
+				URLs: []string{"stun:stun.l.google.com:19302"},
+			},
+		},
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error: failed creating peer connection for user %s on ice candidate: %w\n", userId, err)
+	}
+	a.userPeerConns[userId] = peerConn
+
 	return peerConn, nil
 }
