@@ -16,7 +16,7 @@ import (
 func NewSmallRacer(cfg config.SmallRacerConfig, commandDriver vehicle.CommandDriverIFace, seats []models.Seat) *SmallRacer {
 	log.Printf("setting up small racer with %d seats\n", len(seats))
 
-	state := NewSmallRacerState(cfg)
+	state := NewSmallRacerState(cfg, TransTypeSequential)
 	return &SmallRacer{
 		cfg:           cfg,
 		commandDriver: commandDriver,
@@ -25,12 +25,13 @@ func NewSmallRacer(cfg config.SmallRacerConfig, commandDriver vehicle.CommandDri
 	}
 }
 
-func NewSmallRacerState(cfg config.SmallRacerConfig) SmallRacerState {
+func NewSmallRacerState(cfg config.SmallRacerConfig, transType string) SmallRacerState {
 	return SmallRacerState{
 		Gear:       0,
 		Esc:        0.0,
 		Steer:      0.0,
 		SteerSpeed: cfg.SteerSpeed,
+		TransType:  transType,
 
 		Ratios: map[int]Ratio{
 			-1: {
@@ -183,7 +184,7 @@ func (c *SmallRacer) Start(ctx context.Context) error {
 func (c *SmallRacer) mergeSeatStates(states []SmallRacerState) SmallRacerState {
 	if len(states) < 1 {
 		log.Println("no small racer states given, so making an empty one")
-		return NewSmallRacerState(c.cfg)
+		return NewSmallRacerState(c.cfg, c.state.TransType)
 	}
 
 	return states[0] //TODO actually merge instead of just taking driver commands

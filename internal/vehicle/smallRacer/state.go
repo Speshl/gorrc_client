@@ -23,6 +23,8 @@ func (c *SmallRacerState) switchTransType() {
 		c.TransType = TransTypeSequential
 	case TransTypeSequential:
 		c.TransType = TransTypeHPattern
+	default:
+		c.TransType = TransTypeSequential
 	}
 }
 
