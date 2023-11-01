@@ -194,6 +194,6 @@ func SigmoidCurve(x, a float64) float64 {
 }
 
 // Makes steering less sensitive near middle
-func PowCurve(x float64) float64 {
-	return math.Pow(x, 1.3)
+func PowCurve(x float64, y float64) float64 {
+	return math.Pow(x, y)
 }

@@ -1,6 +1,7 @@
 package smallracer
 
 import (
+	"github.com/Speshl/gorrc_client/internal/models"
 	"github.com/Speshl/gorrc_client/internal/vehicle"
 )
 
@@ -13,6 +14,15 @@ func (c *SmallRacerState) upShift() {
 func (c *SmallRacerState) downShift() {
 	if c.Gear > -1 {
 		c.Gear--
+	}
+}
+
+func (c *SmallRacerState) switchTransType() {
+	switch c.TransType {
+	case TransTypeHPattern:
+		c.TransType = TransTypeSequential
+	case TransTypeSequential:
+		c.TransType = TransTypeHPattern
 	}
 }
 
@@ -32,15 +42,46 @@ func (c *SmallRacerState) trimSteerRight() {
 	}
 }
 
-func (c *SmallRacerState) mapSteer(value float64) {
+func (c *SmallRacerState) mapHPattern(newState models.ControlState, forwardGears []int, reverseGear int) {
+	if c.TransType != TransTypeHPattern {
+		return
+	}
+
+	//check if in a forward gear
+	for i, forwardGear := range forwardGears {
+		if newState.Buttons[forwardGear] {
+			if i+1 <= TopGear {
+				c.Gear = i + 1
+			} else {
+				c.Gear = TopGear
+			}
+			return
+		}
+	}
+
+	//check if in reverse
+	if newState.Buttons[reverseGear] {
+		c.Gear = -1
+		return
+	}
+
+	//else in neutral
+	c.Gear = 0
+}
+
+func (c *SmallRacerState) mapSteer(value float64, curve float64) {
+	if curve < 1.0 || curve > 2.0 {
+		curve = 1.0
+	}
+
 	valueWithTrim := value + c.SteerTrim
 
 	valueWithCurve := float64(0)
 	if valueWithTrim > 0 {
-		valueWithCurve = vehicle.PowCurve(valueWithTrim)
+		valueWithCurve = vehicle.PowCurve(valueWithTrim, curve)
 	} else if valueWithTrim < 0 {
 		valueWithTrim = valueWithTrim * -1
-		valueWithCurve = vehicle.PowCurve(valueWithTrim)
+		valueWithCurve = vehicle.PowCurve(valueWithTrim, curve)
 		valueWithCurve = valueWithCurve * -1
 	}
 

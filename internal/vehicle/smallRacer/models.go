@@ -9,14 +9,27 @@ import (
 )
 
 const (
+	MaxSeats = 2
+
 	//Button Maps
-	MaxSeats     = 2
 	TrimLeft     = 0
 	TrimRight    = 1
 	CamCenter    = 2
 	TurretCenter = 2
-	UpShift      = 3
-	DownShift    = 4
+
+	//Sequential
+	UpShift         = 3
+	DownShift       = 4
+	SwitchTransType = 5
+
+	//HPattern
+	ReverseGear = 6
+	FirstGear   = 7
+	SecondGear  = 8
+	ThirdGear   = 9
+	FourthGear  = 10
+	FifthGear   = 11
+	SixthGear   = 12
 
 	VolumeMute = 20
 	VolumeUp   = 21
@@ -44,11 +57,6 @@ const (
 	MinOutput = -1.0
 )
 
-var TransTypeMap = map[int]string{
-	0: TransTypeSequential,
-	1: TransTypeHPattern,
-}
-
 type Ratio struct {
 	Name string
 	Max  float64
@@ -75,6 +83,7 @@ type SmallRacerState struct {
 	Steer     float64
 	SteerTrim float64
 	Gear      int
+	TransType string
 
 	//Config
 	SteerSpeed float64

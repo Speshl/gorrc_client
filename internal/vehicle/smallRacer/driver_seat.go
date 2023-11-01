@@ -17,11 +17,14 @@ func driverParser[T SmallRacerState](oldCommand, newCommand models.ControlState,
 
 	vehicle.NewPress(oldCommand, newCommand, UpShift, newState.upShift)
 	vehicle.NewPress(oldCommand, newCommand, DownShift, newState.downShift)
+	vehicle.NewPress(oldCommand, newCommand, SwitchTransType, newState.switchTransType)
 
 	vehicle.NewPress(oldCommand, newCommand, TrimLeft, newState.trimSteerLeft)
 	vehicle.NewPress(oldCommand, newCommand, TrimRight, newState.trimSteerRight)
 
-	newState.mapSteer(newCommand.Axes[0])
+	newState.mapHPattern(newCommand, []int{7, 8, 9, 10, 11, 12}, 6)
+
+	newState.mapSteer(newCommand.Axes[0], newCommand.Axes[9])
 	newState.mapEsc(newCommand.Axes[1], newCommand.Axes[2])
 
 	return newState
@@ -48,9 +51,10 @@ func driverHudUpdater[T SmallRacerState](state vehicle.VehicleStateIFace[T], net
 		netInfo.TxDropped,
 	)
 
-	lines[1] = fmt.Sprintf("Esc:%.2f | Gear:%s | Steer:%.2f | Trim:%.2f",
+	lines[1] = fmt.Sprintf("Esc:%.2f | Gear:%s | Type:%s | Steer:%.2f | Trim:%.2f",
 		newState.Esc,
 		newState.Ratios[newState.Gear].Name,
+		newState.TransType,
 		newState.Steer,
 		newState.SteerTrim,
 	)
