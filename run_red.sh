@@ -9,7 +9,7 @@ fi
 echo Compiling...
 go build .
 
-export $(grep -v '^#' real.env | xargs)
+export $(grep -v '^#' gorrc_red.env | xargs)
 export XDG_RUNTIME_DIR=""
 
 sudo -E ./gorrc_client
